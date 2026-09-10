@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>QbD Tool | Kushal Paudel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+  :root{
+    --ink:#1B2A45; --ink-soft:#4A5670; --paper:#F4F5F2; --panel:#FFFFFF; --line:#DADFE3;
+    --amber:#B8860B; --amber-soft:#F5E9D0; --green:#2F6E4C; --green-soft:#E3F0E7;
+    --red:#A8362B; --red-soft:#F6E2DF; --mono:"SF Mono", ui-monospace, Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:14px; line-height:1.5; }
+  header{ background:var(--ink); color:#fff; padding:14px 28px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+  header h1{ font-size:16px; font-weight:600; margin:0; }
+  header .sub{ color:#B9C2D6; font-size:11.5px; max-width:640px; }
+  .header-actions{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .header-actions button, .header-actions label{ background:#25375A; color:#fff; border:1px solid #34486E; padding:6px 10px; border-radius:4px; font-size:12px; cursor:pointer; font-family:inherit; }
+  .header-actions input[type=file]{ display:none; }
+  nav{ display:flex; gap:2px; background:#101B30; padding:0 24px; overflow-x:auto; }
+  nav button{ background:none; border:none; color:#B9C2D6; padding:12px 15px; font-size:12.5px; cursor:pointer; border-bottom:2px solid transparent; font-family:inherit; white-space:nowrap; }
+  nav button.active{ color:#fff; border-bottom:2px solid var(--amber); }
+  main{ padding:24px 28px 80px; max-width:1280px; margin:0 auto; }
+  .panel{ background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px; margin-bottom:20px; }
+  .panel h2{ font-size:15px; margin:0 0 4px; }
+  .panel .desc{ color:var(--ink-soft); font-size:12.5px; margin-bottom:12px; }
+  .filter-bar{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px; padding:10px 12px; background:#F7F7F5; border:1px solid var(--line); border-radius:4px; }
+  .filter-bar label{ font-size:12px; color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+  .filter-bar select{ width:auto; min-width:160px; }
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{ text-align:left; color:var(--ink-soft); font-weight:600; font-size:11px; padding:6px 8px; border-bottom:1px solid var(--line); }
+  td{ padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  input[type=text], textarea, select{ width:100%; border:1px solid var(--line); border-radius:4px; padding:6px 8px; font-family:inherit; font-size:13px; background:#fff; color:var(--ink); }
+  textarea{ resize:vertical; min-height:34px; }
+  .row-actions{ white-space:nowrap; }
+  button.icon{ background:none; border:none; cursor:pointer; color:var(--ink-soft); font-size:13px; padding:2px 6px; }
+  button.icon:hover{ color:var(--red); }
+  .add-btn{ background:var(--ink); color:#fff; border:none; padding:8px 14px; border-radius:4px; font-size:13px; cursor:pointer; margin-top:12px; font-family:inherit; }
+  .add-btn:hover{ background:#0F1C33; }
+  .tag{ display:inline-block; padding:2px 8px; border-radius:3px; font-size:11.5px; font-weight:600; }
+  .tag.CQA, .tag.CPP, .tag.High{ background:var(--red-soft); color:var(--red); }
+  .tag.pCQA, .tag.KPP, .tag.Medium{ background:var(--amber-soft); color:var(--amber); }
+  .tag.Non-CQA, .tag.Non-CPP, .tag.Low{ background:var(--green-soft); color:var(--green); }
+  .num{ font-family:var(--mono); }
+  .summary-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+  .stat{ background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:16px; text-align:center; }
+  .stat .n{ font-size:28px; font-weight:600; font-family:var(--mono); }
+  .stat .l{ color:var(--ink-soft); font-size:12px; margin-top:2px; }
+  .stat.CQA .n, .stat.CPP .n, .stat.High .n{ color:var(--red); }
+  .stat.pCQA .n, .stat.KPP .n, .stat.Medium .n{ color:var(--amber); }
+  .stat.Non-CQA .n, .stat.Non-CPP .n, .stat.Low .n{ color:var(--green); }
+  .empty{ color:var(--ink-soft); font-size:13px; padding:16px 0; text-align:center; }
+  .print-btn{ background:#fff; border:1px solid var(--line); color:var(--ink); padding:8px 14px; border-radius:4px; font-size:13px; cursor:pointer; font-family:inherit; margin-left:8px; }
+  .unitop{ border:1px solid var(--line); border-radius:6px; margin-bottom:14px; overflow:hidden; }
+  .unitop-head{ background:#F0F1EE; padding:10px 14px; display:flex; align-items:center; gap:10px; }
+  .unitop-head .order{ font-family:var(--mono); color:var(--ink-soft); font-size:12px; width:20px; }
+  .unitop-head select{ flex:1; font-weight:600; }
+  .unitop-actions{ display:flex; gap:2px; }
+  .unitop-body{ padding:10px 14px; }
+  .unitop-desc{ margin-bottom:10px; }
+  .param-block{ border:1px dashed var(--line); border-radius:4px; padding:8px; margin-bottom:8px; }
+  .param-row-top{ display:grid; grid-template-columns:1.6fr 0.7fr 32px; gap:8px; margin-bottom:6px; align-items:start; }
+  .param-row-bottom{ display:grid; grid-template-columns:1fr 1fr 1.6fr; gap:8px; }
+  table.matrix{ border-collapse:collapse; font-size:12.5px; }
+  table.matrix th, table.matrix td{ border:1px solid var(--line); padding:5px; text-align:center; }
+  table.matrix th.rowhead{ text-align:left; font-weight:500; color:var(--ink); background:#F7F7F5; white-space:nowrap; }
+  table.matrix th.colhead{ writing-mode:vertical-rl; transform:rotate(180deg); height:110px; font-weight:600; }
+  table.matrix select{ width:44px; padding:2px; text-align:center; border:none; font-family:var(--mono); font-weight:600; }
+  .l0{ background:#fff; } .l1,.l2{ background:var(--green-soft); color:var(--green); }
+  .l3{ background:var(--amber-soft); color:var(--amber); } .l4,.l5{ background:var(--red-soft); color:var(--red); }
+  .matrix-wrap, .table-scroll{ overflow-x:auto; }
+  .unit-suffix{ color:var(--ink-soft); font-size:12px; margin-left:4px; }
+  .num-pair{ display:flex; align-items:center; gap:4px; }
+  .num-pair input{ width:92px; flex:none; }
+  tr.uo-group-row td{ background:#EEF0EC; font-weight:600; padding:8px; border-top:2px solid var(--line); font-size:12.5px; }
+  table.matrix tr.uo-group-row td{ text-align:left; }
+  details.rating-help{ margin-bottom:14px; border:1px solid var(--line); border-radius:4px; padding:8px 12px; background:#FAFAF8; }
+  details.rating-help summary{ cursor:pointer; font-size:12.5px; color:var(--ink-soft); font-weight:600; }
+  details.rating-help table{ margin-top:10px; }
+  details.rating-help .desc{ margin:8px 0 0; }
+  #module3DraftContent{ border:1px solid var(--line); border-radius:4px; padding:24px; background:#fff; font-size:13px; line-height:1.65; }
+  #module3DraftContent h3{ font-size:14px; margin:20px 0 8px; color:var(--ink); border-bottom:1px solid var(--line); padding-bottom:4px; }
+  #module3DraftContent h3:first-child{ margin-top:0; }
+  #module3DraftContent p{ margin:8px 0; }
+  #module3DraftContent table{ margin:8px 0 14px; }
+  #module3DraftContent ul{ margin:8px 0; padding-left:20px; }
+  #module3DraftContent .table-caption{ font-weight:600; font-size:12.5px; color:var(--ink); margin:14px 0 4px; }
+  #module3DraftContent .m3-header{ text-align:center; border-bottom:2px solid var(--ink); padding-bottom:14px; margin-bottom:20px; }
+  #module3DraftContent .m3-header h2{ margin:0; font-size:16px; color:var(--ink); }
+  #module3DraftContent .m3-header .meta{ color:var(--ink-soft); font-size:11.5px; margin-top:6px; }
+  @media print{ nav, .add-btn, .row-actions, .print-btn, .filter-bar, .header-actions{ display:none !important; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+      <rect x="1" y="1" width="38" height="38" rx="8" fill="#1B2A45" stroke="#B8860B" stroke-width="2"/>
+      <text x="20" y="26" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">KP</text>
+    </svg>
+    <div>
+      <h1>QbD Tool</h1>
+      <div class="sub">QTPP → CQA → Process Flow → Linkage → Classification → FMEA 2A → Characterization Plan → FMEA 2B / Control Strategy → PPQ Acceptance Criteria</div>
+      <div class="sub" style="margin-top:2px; color:#B8860B; font-weight:600;">by Kushal Paudel</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <span class="sub" id="saveStatus">Loading…</span>
+    <button onclick="exportExcel()">Export to Excel</button>
+    <button onclick="exportJSON()">Backup (JSON)</button>
+    <label>Restore (JSON)<input type="file" accept="application/json" onchange="importJSONFile(this)"></label>
+  </div>
+</header>
+
+<nav>
+  <button data-tab="guide" class="active">Guide</button>
+  <button data-tab="qtpp">QTPP</button>
+  <button data-tab="cqa">CQA & Risk Assessment</button>
+  <button data-tab="process">Process Flow</button>
+  <button data-tab="linkage">Linkage</button>
+  <button data-tab="classify">Classification</button>
+  <button data-tab="fmea2a">FMEA 2A</button>
+  <button data-tab="pcplan">Characterization Plan</button>
+  <button data-tab="fmea2b">FMEA 2B / Control Strategy</button>
+  <button data-tab="supportive">Supportive Studies</button>
+  <button data-tab="ppq">PPQ Acceptance Criteria</button>
+  <button data-tab="module3">Module 3 Draft</button>
+  <button data-tab="summary">Summary Report</button>
+</nav>
+
+<main>
+
+  <section id="tab-guide" class="tabpane">
+    <div class="panel">
+      <h2>How to Use This Tool</h2>
+      <div class="desc">Work through the tabs in order — each stage builds on the data from the one before it.</div>
+      <ol style="padding-left:20px; font-size:13px; line-height:1.85; margin:0;">
+        <li><b>QTPP</b> — Define the Quality Target Product Profile: the quality attributes and targets your product must meet. Prepopulated with a typical AAV example — edit freely.</li>
+        <li><b>CQA & Risk Assessment</b> — List candidate quality attributes and score Impact and Uncertainty on Safety and Efficacy. The tool classifies each as CQA, pCQA, or Non-CQA.</li>
+        <li><b>Process Flow</b> — Build your process as unit operations in order, each with its process parameters, units, and Low/High Setpoint operating range.</li>
+        <li><b>Linkage</b> — Score how strongly each process parameter affects each CQA/pCQA (0–5).</li>
+        <li><b>Classification</b> — Confirm which parameters are Critical (CPP), Key (KPP), or Non-Critical, based on the linkage scores.</li>
+        <li><b>FMEA 2A</b> — Score Severity, Occurrence, and Detection for each CPP/KPP to rank process risk.</li>
+        <li><b>Characterization Plan</b> — For High-risk parameters only, plan a characterization study (DOE type, range, materials). This tab plans the study — it doesn't run one.</li>
+        <li><b>FMEA 2B / Control Strategy</b> — After characterization: record PAR, NOR, Design Space, Action Limits, what to do if a limit is reached, and the broader facility/utilities/personnel/equipment control strategy.</li>
+        <li><b>Supportive Studies</b> — Log validation studies that support the process outside per-parameter control: extractables & leachables, viral clearance, sterile filter validation, container closure integrity, hold time studies, and similar.</li>
+        <li><b>PPQ Acceptance Criteria</b> — Define acceptance criteria to qualify your process on PPQ batches, for both CQAs and key process parameters.</li>
+        <li><b>Module 3 Draft</b> — Assembles a starting CTD Module 3.2.S draft from everything above, with an optional AI polish pass for more natural regulatory prose.</li>
+      </ol>
+      <div class="desc" style="margin-top:12px;">Your work saves automatically while using this inside Claude.ai. If you've downloaded the file and use it standalone, click <b>Backup (JSON)</b> before closing and <b>Restore (JSON)</b> when you reopen it — that file won't auto-save outside Claude.ai.</div>
+    </div>
+    <div class="panel">
+      <h2>What Each Rating Means</h2>
+      <div class="desc">Reference for every scoring scale used across the tool. The same tables also appear as a quick expandable note directly above the relevant table in each tab.</div>
+
+      <h2 style="font-size:13px;margin-top:16px;">Impact (Safety / Efficacy) — CQA tab</h2>
+      <table><thead><tr><th style="width:60px">Score</th><th>Meaning</th></tr></thead><tbody>
+        <tr><td class="num">1</td><td>No plausible effect on patient safety or therapeutic efficacy</td></tr>
+        <tr><td class="num">2</td><td>Minor effect — negligible or easily managed</td></tr>
+        <tr><td class="num">3</td><td>Moderate effect — noticeable but not severe</td></tr>
+        <tr><td class="num">4</td><td>Major effect — significant impact on safety or efficacy</td></tr>
+        <tr><td class="num">5</td><td>Critical — severe/life-threatening, or complete loss of therapeutic effect</td></tr>
+      </tbody></table>
+
+      <h2 style="font-size:13px;margin-top:16px;">Uncertainty (Safety / Efficacy) — CQA tab</h2>
+      <table><thead><tr><th style="width:60px">Score</th><th>Meaning</th></tr></thead><tbody>
+        <tr><td class="num">1</td><td>Well understood — extensive prior knowledge, literature, or platform data</td></tr>
+        <tr><td class="num">2</td><td>Mostly understood — some data available, minor gaps</td></tr>
+        <tr><td class="num">3</td><td>Moderately understood — limited data, some assumptions made</td></tr>
+        <tr><td class="num">4</td><td>Poorly understood — little direct data, mostly inferred</td></tr>
+        <tr><td class="num">5</td><td>Unknown — novel attribute or modality, no data available</td></tr>
+      </tbody></table>
+      <div class="desc">Risk Score = Impact × Uncertainty (per axis). Impact of 5 on either axis always yields CQA, regardless of Uncertainty. Otherwise: ≥15 → CQA · 6–14 → pCQA · ≤5 → Non-CQA. Overall classification takes whichever axis is higher-risk.</div>
+
+      <h2 style="font-size:13px;margin-top:16px;">Linkage Score — Linkage tab</h2>
+      <table><thead><tr><th style="width:60px">Score</th><th>Meaning</th></tr></thead><tbody>
+        <tr><td class="num">0</td><td>No relationship — no plausible mechanistic link to this CQA</td></tr>
+        <tr><td class="num">1</td><td>Very low impact on this CQA</td></tr>
+        <tr><td class="num">2</td><td>Low impact</td></tr>
+        <tr><td class="num">3</td><td>Moderate impact</td></tr>
+        <tr><td class="num">4</td><td>High impact — likely to measurably shift this CQA</td></tr>
+        <tr><td class="num">5</td><td>Very high impact — this parameter is a primary driver of the CQA</td></tr>
+      </tbody></table>
+      <div class="desc">A parameter with any linkage score of 4 or 5 is suggested as a CPP in the Classification tab.</div>
+
+      <h2 style="font-size:13px;margin-top:16px;">Severity, Occurrence, Detection (S-O-D) — FMEA 2A & 2B</h2>
+      <table><thead><tr><th style="width:55px">Score</th><th style="width:30%">Severity (effect if parameter deviates)</th><th style="width:30%">Occurrence (likelihood of deviation)</th><th>Detection (higher score = harder to detect)</th></tr></thead><tbody>
+        <tr><td class="num">1</td><td>Negligible effect on the CQA</td><td>Rare — highly unlikely given historical control</td><td>Near-certain detection — continuous/automated monitoring</td></tr>
+        <tr><td class="num">2</td><td>Minor effect, easily corrected</td><td>Unlikely</td><td>High detection — reliable in-process testing</td></tr>
+        <tr><td class="num">3</td><td>Moderate effect, may need investigation/rework</td><td>Possible — occasional excursions observed historically</td><td>Moderate detection — periodic sampling, some risk of missing it</td></tr>
+        <tr><td class="num">4</td><td>Major effect, likely to cause CQA failure</td><td>Likely — frequent excursions historically</td><td>Low detection — relies mainly on end-product testing</td></tr>
+        <tr><td class="num">5</td><td>Critical — severe/certain CQA failure with safety implications</td><td>Almost certain without tight control</td><td>Very low/no detection — not caught until far downstream</td></tr>
+      </tbody></table>
+      <div class="desc">RPN = Severity × Occurrence × Detection. ≥60 → High (characterize) · 20–59 → Medium (verify/monitor) · &lt;20 → Low (no action needed).</div>
+
+      <h2 style="font-size:13px;margin-top:16px;">Suggested Mode of Study — Characterization Plan tab</h2>
+      <div class="desc">2 or more High-risk parameters sharing a unit operation → multivariate DOE suggested (interactions become relevant). Only 1 High-risk parameter → Univariate/OFAT suggested. A starting point, not a rule — use your own judgment.</div>
+    </div>
+  </section>
+
+  <section id="tab-qtpp" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>Quality Target Product Profile (QTPP)</h2>
+      <div class="desc">Prepopulated with typical AAV QTPP elements — fully editable.</div>
+      <table>
+        <thead><tr><th style="width:22%">Attribute</th><th style="width:22%">Target / Range</th><th>Justification</th><th style="width:40px"></th></tr></thead>
+        <tbody id="qtppBody"></tbody>
+      </table>
+      <div id="qtppEmpty" class="empty" style="display:none">No QTPP entries yet.</div>
+      <button class="add-btn" onclick="addQTPP()">+ Add QTPP entry</button>
+    </div>
+  </section>
+
+  <section id="tab-cqa" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>CQA Identification — Level 1A Risk Assessment</h2>
+      <div class="desc">
+        Impact and Uncertainty scored 1–5 separately for Safety and Efficacy. Risk Score (per axis) = Impact × Uncertainty; Impact=5 on either axis always yields CQA.
+        Overall classification takes the higher-risk axis. Thresholds: ≥15 or Impact=5 → <b>CQA</b> · 6–14 → <b>pCQA</b> · ≤5 → <b>Non-CQA</b>.
+      </div>
+      <div id="cqaFilterBar"></div>
+      <details class="rating-help">
+        <summary>What do these ratings mean?</summary>
+        <table><thead><tr><th style="width:55px">Score</th><th>Impact (effect on Safety/Efficacy)</th><th>Uncertainty (how well it's understood)</th></tr></thead><tbody>
+          <tr><td class="num">1</td><td>No plausible effect</td><td>Well understood — strong prior/literature data</td></tr>
+          <tr><td class="num">2</td><td>Minor, easily managed</td><td>Mostly understood — minor gaps</td></tr>
+          <tr><td class="num">3</td><td>Moderate, noticeable</td><td>Moderately understood — some assumptions</td></tr>
+          <tr><td class="num">4</td><td>Major effect</td><td>Poorly understood — mostly inferred</td></tr>
+          <tr><td class="num">5</td><td>Critical / life-threatening or total loss of efficacy</td><td>Unknown — novel, no data</td></tr>
+        </tbody></table>
+        <div class="desc">Impact=5 on either axis always yields CQA. Otherwise Risk Score (Impact×Uncertainty): ≥15 CQA · 6–14 pCQA · ≤5 Non-CQA.</div>
+      </details>
+      <table>
+        <thead><tr>
+          <th style="width:13%">Attribute</th><th style="width:11%">Category</th><th style="width:10%">Linked QTPP</th>
+          <th style="width:6%">Imp(S)</th><th style="width:6%">Unc(S)</th><th style="width:6%">Imp(E)</th><th style="width:6%">Unc(E)</th>
+          <th style="width:7%">Safety Score</th><th style="width:7%">Efficacy Score</th><th style="width:8%">Classification</th><th>Rationale</th><th style="width:40px"></th>
+        </tr></thead>
+        <tbody id="cqaBody"></tbody>
+      </table>
+      <div id="cqaEmpty" class="empty" style="display:none">No attributes match the current filter.</div>
+      <button class="add-btn" onclick="addCQA()">+ Add attribute for assessment</button>
+    </div>
+  </section>
+
+  <section id="tab-process" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>Process Description & Flow</h2>
+      <div class="desc">Prepopulated with an example AAV process train — fully editable. Selecting a parameter auto-fills its typical unit.</div>
+      <div id="processFilterBar"></div>
+      <div id="unitOpsList"></div>
+      <button class="add-btn" onclick="addUnitOp()">+ Add unit operation</button>
+    </div>
+  </section>
+
+  <section id="tab-linkage" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>Parameter → CQA Linkage Study</h2>
+      <div class="desc">Grouped by unit operation, then parameter. Score 0 (no link) – 5 (high impact) against each CQA/pCQA.</div>
+      <div id="linkageFilterBar"></div>
+      <details class="rating-help">
+        <summary>What do these scores mean?</summary>
+        <div class="desc">0 no relationship · 1 very low · 2 low · 3 moderate · 4 high (measurable shift in the CQA) · 5 very high (primary driver of the CQA). A score of 4–5 suggests CPP in the Classification tab.</div>
+      </details>
+      <div id="linkageMatrix" class="matrix-wrap"></div>
+    </div>
+    <div class="panel"><h2 style="display:flex;justify-content:space-between;align-items:center;">Module 2 Report<button class="print-btn" onclick="window.print()">Print / Export PDF</button></h2><div id="module2Report"></div></div>
+  </section>
+
+  <section id="tab-classify" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>Parameter Classification — CPP / KPP / Non-CPP</h2>
+      <div class="desc">Grouped by unit operation. Suggested from max linkage score (≥4 → CPP). Confirm, override, or mark KPP.</div>
+      <div id="classifyFilterBar"></div>
+      <details class="rating-help">
+        <summary>What do CPP / KPP / Non-CPP mean?</summary>
+        <div class="desc"><b>CPP</b> — variability meaningfully affects a CQA; must be tightly controlled. <b>KPP</b> — important for process consistency/yield but has no direct CQA link — a judgment call, not derived from linkage. <b>Non-CPP</b> — low linkage to any CQA; standard control is sufficient.</div>
+      </details>
+      <table>
+        <thead><tr><th style="width:20%">Parameter</th><th style="width:9%">Max Linkage</th><th style="width:10%">Suggested</th><th style="width:12%">Classification</th><th>Rationale</th></tr></thead>
+        <tbody id="classifyBody"></tbody>
+      </table>
+      <div id="classifyEmpty" class="empty" style="display:none">No parameters match the current filter.</div>
+    </div>
+    <div class="panel"><h2 style="display:flex;justify-content:space-between;align-items:center;">Module 3 Report<button class="print-btn" onclick="window.print()">Print / Export PDF</button></h2><div class="summary-grid" id="classifyStats"></div><div id="classifyReport"></div></div>
+  </section>
+
+  <section id="tab-fmea2a" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>FMEA 2A — Process Risk Assessment (S-O-D)</h2>
+      <div class="desc">Grouped by unit operation. CPP/KPP only. RPN = S×O×D. ≥60 High · 20–59 Medium · &lt;20 Low.</div>
+      <div id="fmea2aFilterBar"></div>
+      <details class="rating-help">
+        <summary>What do S, O, D mean?</summary>
+        <table><thead><tr><th style="width:55px">Score</th><th style="width:30%">Severity</th><th style="width:30%">Occurrence</th><th>Detection (higher = harder to detect)</th></tr></thead><tbody>
+          <tr><td class="num">1</td><td>Negligible effect on CQA</td><td>Rare</td><td>Near-certain detection (automated monitoring)</td></tr>
+          <tr><td class="num">2</td><td>Minor, easily corrected</td><td>Unlikely</td><td>High detection (reliable in-process testing)</td></tr>
+          <tr><td class="num">3</td><td>Moderate, needs investigation</td><td>Possible — occasional excursions</td><td>Moderate detection (periodic sampling)</td></tr>
+          <tr><td class="num">4</td><td>Major, likely CQA failure</td><td>Likely — frequent excursions</td><td>Low detection (end-product testing only)</td></tr>
+          <tr><td class="num">5</td><td>Critical, safety implications</td><td>Almost certain without control</td><td>Very low/no detection</td></tr>
+        </tbody></table>
+        <div class="desc">RPN = S × O × D. ≥60 High · 20–59 Medium · &lt;20 Low.</div>
+      </details>
+      <div class="table-scroll"><table>
+        <thead><tr><th style="width:15%">Parameter</th><th style="width:7%">Class</th><th>Failure Mode</th><th style="width:5%">S</th><th style="width:5%">O</th><th style="width:5%">D</th><th style="width:6%">RPN</th><th style="width:7%">Tier</th><th>Rationale</th></tr></thead>
+        <tbody id="fmea2aBody"></tbody>
+      </table></div>
+      <div id="fmea2aEmpty" class="empty" style="display:none">No parameters match the current filter.</div>
+    </div>
+    <div class="panel"><h2 style="display:flex;justify-content:space-between;align-items:center;">Module 4 Report<button class="print-btn" onclick="window.print()">Print / Export PDF</button></h2><div class="summary-grid" id="fmea2aStats"></div><div id="fmea2aReport"></div></div>
+  </section>
+
+  <section id="tab-pcplan" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>Process Characterization Plan (Plan Only)</h2>
+      <div class="desc">Grouped by unit operation — only High-tier parameters from FMEA 2A, with a suggested mode of study. Plan only; no DOE calculations.</div>
+      <div id="pcplanFilterBar"></div>
+      <div id="pcplanBody"></div>
+      <div id="pcplanEmpty" class="empty" style="display:none">No high-risk parameters match the current filter.</div>
+    </div>
+    <div class="panel"><h2 style="display:flex;justify-content:space-between;align-items:center;">Module 5 Report<button class="print-btn" onclick="window.print()">Print / Export PDF</button></h2><div id="pcplanReport"></div></div>
+  </section>
+
+  <section id="tab-fmea2b" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>FMEA 2B — Post-Characterization: PAR, NOR, Design Space, Action Limits</h2>
+      <div class="desc">Grouped by unit operation. Re-score S-O-D with post-study knowledge; record PAR, NOR, Design Space, Action Limits, and the response when a limit is reached.</div>
+      <div id="fmea2bFilterBar"></div>
+      <details class="rating-help">
+        <summary>What do S, O, D mean?</summary>
+        <div class="desc">Same scale as FMEA 2A, re-scored with post-characterization knowledge (Occurrence/Detection typically improve once the parameter has been studied). RPN = S × O × D. ≥60 High · 20–59 Medium · &lt;20 Low.</div>
+      </details>
+      <div class="table-scroll"><table>
+        <thead><tr><th style="width:10%">Parameter</th><th style="width:9%">PAR</th><th style="width:9%">NOR</th><th style="width:11%">Design Space</th><th style="width:9%">Action Limit</th><th style="width:11%">If Low Limit Reached</th><th style="width:11%">If High Limit Reached</th><th style="width:4%">S</th><th style="width:4%">O</th><th style="width:4%">D</th><th style="width:5%">RPN</th><th style="width:6%">Tier</th></tr></thead>
+        <tbody id="fmea2bBody"></tbody>
+      </table></div>
+      <div id="fmea2bEmpty" class="empty" style="display:none">No characterized parameters match the current filter.</div>
+    </div>
+    <div class="panel">
+      <h2>Control Strategy Elements</h2>
+      <div class="desc">Facility, Utilities, Personnel/Operators, Equipment, Material, and Procedural controls that support the process — independent of any single parameter.</div>
+      <table>
+        <thead><tr><th style="width:16%">Category</th><th style="width:42%">Control Element</th><th>Rationale</th><th style="width:40px"></th></tr></thead>
+        <tbody id="controlStrategyBody"></tbody>
+      </table>
+      <div id="controlStrategyEmpty" class="empty" style="display:none">No control strategy elements yet.</div>
+      <button class="add-btn" onclick="addControlStrategy()">+ Add control element</button>
+    </div>
+    <div class="panel"><h2 style="display:flex;justify-content:space-between;align-items:center;">Module 6 Report<button class="print-btn" onclick="window.print()">Print / Export PDF</button></h2><div id="fmea2bReport"></div></div>
+  </section>
+
+  <section id="tab-supportive" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>Supportive Validation Studies</h2>
+      <div class="desc">
+        Studies that support the manufacturing process and control strategy but sit outside per-parameter FMEA — extractables & leachables, viral clearance, sterile filter validation, container closure integrity, hold time studies, and similar. Each maps to a typical (not definitive) CTD location — confirm placement against your actual dossier structure and region.
+      </div>
+      <details class="rating-help">
+        <summary>Standard Validation Report Structure (for the full report you'll write outside this tool)</summary>
+        <div class="desc">This tool captures the summary-level record for each study — not the full report. When authoring the actual validation report, the following structure is standard across study types (E&L, viral clearance, sterile filtration, CCI, hold time):</div>
+        <ol style="padding-left:20px; font-size:12.5px; line-height:1.8;">
+          <li><b>Title Page</b> — study title, product, protocol/report number, version, approval signatures</li>
+          <li><b>Purpose / Objective</b> — what the study demonstrates</li>
+          <li><b>Scope</b> — process steps, materials, product presentations covered (and explicitly what's excluded)</li>
+          <li><b>Background & Risk Justification</b> — why the study is needed; reference to the risk assessment driving it</li>
+          <li><b>Responsibilities</b> — roles for execution, review, approval</li>
+          <li><b>Materials, Equipment & Model Systems</b> — scale-down models, reference standards, challenge organisms/spike materials as applicable</li>
+          <li><b>Methodology / Protocol Summary</b> — study design, worst-case justification, sampling plan</li>
+          <li><b>Acceptance Criteria</b> — predefined, with justification</li>
+          <li><b>Results & Data Summary</b> — data tables, statistical analysis if applicable</li>
+          <li><b>Deviations & Investigations</b> — any protocol deviations and their impact assessment</li>
+          <li><b>Conclusion</b> — pass/fail disposition against acceptance criteria</li>
+          <li><b>References & Appendices</b> — raw data, certificates of analysis, related protocols</li>
+        </ol>
+      </details>
+      <div class="table-scroll"><table>
+        <thead><tr>
+          <th style="width:13%">Study Type</th><th style="width:8%">CTD Ref.</th><th style="width:13%">Title</th><th style="width:7%">Status</th>
+          <th>Risk Assessment</th><th>Scope</th><th>Objective</th><th>Design Summary</th><th>Acceptance Criteria</th><th>Outcome / Result</th><th style="width:40px"></th>
+        </tr></thead>
+        <tbody id="supportiveBody"></tbody>
+      </table></div>
+      <div id="supportiveEmpty" class="empty" style="display:none">No supportive studies yet.</div>
+      <button class="add-btn" onclick="addSupportiveStudy()">+ Add supportive study</button>
+    </div>
+  </section>
+
+  <section id="tab-ppq" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>PPQ Acceptance Criteria — Process Parameters</h2>
+      <div class="desc">Grouped by unit operation. PPQ batches are typically challenged at Low, Target, and High setpoints within the established range — define each, plus the acceptance criterion.</div>
+      <div id="ppqParamFilterBar"></div>
+      <div id="ppqParamBody"></div>
+      <div id="ppqParamEmpty" class="empty" style="display:none">No characterized parameters match the current filter.</div>
+    </div>
+    <div class="panel">
+      <h2>PPQ Acceptance Criteria — CQAs</h2>
+      <div id="ppqCqaFilterBar"></div>
+      <table>
+        <thead><tr><th style="width:16%">CQA</th><th style="width:9%">Class</th><th style="width:22%">Acceptance Criterion</th><th style="width:18%">Analytical Method</th><th>Justification</th></tr></thead>
+        <tbody id="ppqBody"></tbody>
+      </table>
+      <div id="ppqEmpty" class="empty" style="display:none">No CQA/pCQA attributes match the current filter.</div>
+    </div>
+    <div class="panel">
+      <h2>Risk-Based PPQ Batch Count</h2>
+      <div class="desc">A starting suggestion based on risk factors already captured in this tool — number of High-risk (RPN≥60) parameters, and any CQA with a Safety Impact of 5. <b>This is a discussion starting point, not a validated statistical determination</b> — final batch number is a QA/regulatory decision, typically per internal SOP or statistical justification (e.g., continued process verification).</div>
+      <div id="ppqBatchSuggestion"></div>
+      <div style="display:flex; gap:8px; align-items:center; margin-top:10px;">
+        <label class="sub" style="color:var(--ink-soft);">Number of PPQ batches: <input type="number" id="ppqBatchCountInput" min="1" max="10" style="width:60px; display:inline-block;"></label>
+        <button class="add-btn" style="margin-top:0;" onclick="regeneratePPQBatches()">Apply</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>PPQ Batch Results</h2>
+      <div class="desc">Enter each batch's actual result against the CQA and process parameter acceptance criteria. Process parameters auto-suggest Pass/Fail when the NOR and entered result are both numeric; CQA criteria are free-text and require manual Pass/Fail judgment.</div>
+      <div id="ppqBatchMeta"></div>
+      <div class="table-scroll"><div id="ppqBatchResults"></div></div>
+      <div id="ppqBatchEmpty" class="empty" style="display:none">No PPQ batches yet — set a batch count above and click Apply.</div>
+    </div>
+    <div class="panel">
+      <h2>Batch Disposition Summary</h2>
+      <div id="ppqBatchDisposition"></div>
+    </div>
+    <div class="panel"><h2 style="display:flex;justify-content:space-between;align-items:center;">Final Consolidated Report<button class="print-btn" onclick="window.print()">Print / Export PDF</button></h2><div id="finalReport"></div></div>
+  </section>
+
+  <section id="tab-module3" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2>Draft CTD Module 3 Section</h2>
+      <div class="desc">
+        Auto-assembles a starting draft of key Module 3 (Quality) subsections — Manufacturing Process Description, Control of Critical Steps, Process Validation, and Justification of Specification — using the data captured across this tool.
+        <b>This is a starting draft, not a submission-ready document.</b> It needs expert review, verification against source data, and completion of anything this tool doesn't capture (analytical methods detail, structural characterization, stability data, etc.). The text below is directly editable.
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; align-items:center;">
+        <button class="add-btn" style="margin-top:0;" onclick="renderModule3Draft()">Refresh Draft</button>
+        <button class="add-btn" style="margin-top:0; background:#B8860B;" id="polishBtn" onclick="polishWithAI()">Polish with AI (Expert CMC Voice)</button>
+        <button class="print-btn" id="copyDraftBtn" onclick="copyModule3Draft()">Copy to Clipboard</button>
+        <button class="print-btn" onclick="downloadModule3Word()">Download as Word (.doc)</button>
+        <button class="print-btn" onclick="window.print()">Print / Export PDF</button>
+        <span class="sub" id="polishStatus" style="color:var(--ink-soft);"></span>
+      </div>
+      <div id="module3DraftContent" contenteditable="true"></div>
+    </div>
+  </section>
+
+  <section id="tab-summary" class="tabpane" style="display:none">
+    <div class="panel">
+      <h2 style="display:flex;justify-content:space-between;align-items:center;">CQA Summary Report<button class="print-btn" onclick="window.print()">Print / Export PDF</button></h2>
+      <div class="summary-grid">
+        <div class="stat CQA"><div class="n" id="countCQA">0</div><div class="l">CQA</div></div>
+        <div class="stat pCQA"><div class="n" id="countPCQA">0</div><div class="l">pCQA</div></div>
+        <div class="stat Non-CQA"><div class="n" id="countNonCQA">0</div><div class="l">Non-CQA</div></div>
+      </div>
+      <div id="summaryTables"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const STORAGE_KEY = 'qbd-tool-data-v3';
+const CUSTOM_UO = "__custom__";
+const CUSTOM_PARAM = "__custom__";
+const CQA_CATEGORIES = ["General","Safety","Identity","Potency","Purity - Process-Related Impurities","Purity - Product-Related Impurities","Stability","Container Closure"];
+const DOE_TYPES = ["Full Factorial","Fractional Factorial","Central Composite Design (CCD)","Box-Behnken","Plackett-Burman (Screening)","One-Factor-at-a-Time (OFAT)","Other"];
+const CONTROL_CATEGORIES = ["Facility","Utilities","Personnel / Operators","Equipment","Material","Procedural / Documentation"];
+const SUPPORTIVE_STUDY_TYPES = {
+  "Extractables & Leachables": "3.2.P.2.4 / 3.2.P.7",
+  "Sterile Filtration Validation": "3.2.S.2.5 / 3.2.P.3.5",
+  "Viral Clearance Validation": "3.2.A.2",
+  "Container Closure Integrity": "3.2.P.2.4 / 3.2.P.7",
+  "Hold Time Study (In-Process)": "3.2.S.2.5",
+  "Shipping / Transport Validation": "3.2.P.8",
+  "Media Fill / Aseptic Process Simulation": "3.2.P.3.5",
+  "Cleaning Validation": "3.2.S.2.5",
+  "Other": ""
+};
+const SUPPORTIVE_STATUSES = ["Not Started","Planned","In Progress","Complete"];
+
+const AAV_LIBRARY = {
+  "Cell Expansion / Seed Train": {stage:"USP", params:{"Culture Temperature":"°C","Passage Number":"passage","Viable Cell Density":"×10^6 cells/mL","Cell Viability":"%"}},
+  "Transfection (Triple Plasmid)": {stage:"USP", params:{"Plasmid Ratio":"ratio","DNA:PEI Ratio":"ratio","Cell Density at Transfection":"×10^6 cells/mL","Transfection Duration":"hr"}},
+  "Bioreactor Production": {stage:"USP", params:{"Temperature":"°C","pH":"pH units","Dissolved Oxygen (DO)":"% saturation","Agitation Speed":"rpm","Culture Duration Post-Transfection":"hr","CO2 Sparge Rate":"%"}},
+  "Cell Lysis / Harvest": {stage:"USP", params:{"Lysis Buffer Concentration":"%","Lysis Time":"min","Lysis Temperature":"°C","Benzonase Concentration":"U/mL","Benzonase Digestion Time":"hr"}},
+  "Clarification (Depth Filtration)": {stage:"DSP", params:{"Filter Pore Size":"µm","Flux Rate":"LMH","Differential Pressure":"psi","Filter Capacity":"L/m²"}},
+  "Affinity Chromatography": {stage:"DSP", params:{"Load Density":"vg/mL resin","Flow Rate (Load)":"CV/hr","Flow Rate (Elution)":"CV/hr","Elution pH":"pH units","Elution Conductivity":"mS/cm","Residence Time":"min","Wash Volume":"CV"}},
+  "Anion Exchange Chromatography (Full/Empty Separation)": {stage:"DSP", params:{"Load Conductivity":"mS/cm","Load pH":"pH units","Gradient Slope":"%B/CV","Flow Rate":"CV/hr","Elution Salt Concentration":"mM NaCl","Column Bed Height":"cm"}},
+  "Ultrafiltration/Diafiltration (UF/DF)": {stage:"DSP", params:{"Transmembrane Pressure (TMP)":"psi","Crossflow Rate":"LMH","Number of Diavolumes":"DV","Final Concentration Factor":"×","Feed Temperature":"°C"}},
+  "Viral Filtration (Nanofiltration)": {stage:"DSP", params:{"Filter Pore Size":"nm","Transmembrane Pressure":"psi","Flow Rate":"LMH","Filter Throughput":"L/m²"}},
+  "Sterile Filtration (0.2 µm)": {stage:"DSP", params:{"Filter Pore Size":"µm","Bioburden Load":"CFU/mL","Flow Rate":"LMH","Filter Integrity Test (Bubble Point)":"psi"}},
+  "Formulation": {stage:"Fill-Finish", params:{"Final Vector Concentration":"vg/mL","Excipient Concentration":"%","Formulation pH":"pH units","Formulation Temperature":"°C"}},
+  "Fill": {stage:"Fill-Finish", params:{"Fill Volume":"mL","Fill Speed":"units/hr","Headspace":"mL"}},
+  "Stoppering / Capping": {stage:"Fill-Finish", params:{"Stopper Compression Force":"N","Crimp Force":"N"}},
+  "Visual Inspection": {stage:"Fill-Finish", params:{"Inspection Rate":"units/min","Rejection Rate":"%"}},
+  "Freeze-Thaw / Storage": {stage:"Fill-Finish", params:{"Freeze Rate":"°C/min","Storage Temperature":"°C","Number of Freeze-Thaw Cycles":"cycles"}}
+};
+const STAGE_ORDER = ["USP","DSP","Fill-Finish"];
+
+let state = { qtpps: [], cqas: [], unitOps: [], params: [], linkages: {}, controlStrategy: [], supportiveStudies: [], ppqBatches: [], ppqResults: {} };
+let ui = { cqaCategory:'', cqaClass:'', uo:'', tier:'', classFilter:'' };
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s){ return (s==null?'':s).toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ---------- Seed data ----------
+function buildSeedData(){
+  const qtpps = [
+    ["Vector Genome Titer","1×10^13 – 1×10^14 vg/mL","Determines dose accuracy and therapeutic exposure"],
+    ["Capsid Identity","Confirmed AAV serotype (e.g., AAV9) by sequencing/ELISA","Ensures correct tropism and potency"],
+    ["Full/Empty Capsid Ratio","≥70% full capsids","Empty capsids reduce potency and may increase immunogenicity"],
+    ["Potency (Transduction/Infectivity)","Within 2-fold of reference standard","Confirms biological activity"],
+    ["Purity (Protein)","≥90% by CE-SDS","Limits process/product-related impurities"],
+    ["Aggregates","≤5% by SEC/DLS","Aggregates may increase immunogenicity and reduce potency"],
+    ["Residual Host Cell DNA","≤10 ng/dose","Regulatory limit; oncogenic/immunogenic risk"],
+    ["Residual Host Cell Protein","≤100 ng/mg vector","Immunogenicity risk"],
+    ["Sterility","No growth per USP <71>","Patient safety"],
+    ["Endotoxin","≤5 EU/kg/hr dose per USP <85>","Patient safety, pyrogenicity risk"],
+    ["pH","7.0–7.4","Stability and patient tolerability"],
+    ["Osmolality","270–330 mOsm/kg","Patient tolerability, formulation stability"],
+    ["Appearance","Clear to slightly opalescent, colorless, free of visible particulates","Basic quality/safety check"],
+    ["Container Closure Integrity","No ingress per validated CCIT method","Maintains sterility over shelf life"],
+    ["Stability (Shelf Life)","≥24 months at -60 to -80°C","Supports product shelf life claim"]
+  ].map(([name,target,justification])=>({id:uid(), name, target, justification}));
+  const qByName = n => (qtpps.find(q=>q.name===n)||{}).id || '';
+
+  const cqas = [
+    ["Vector Genome Titer","Potency","Vector Genome Titer",3,2,5,2,"Directly determines dose; central to efficacy"],
+    ["Capsid Identity","Identity","Capsid Identity",4,1,5,1,"Wrong identity risks both safety and total loss of efficacy"],
+    ["Full/Empty Capsid Ratio","Purity - Product-Related Impurities","Full/Empty Capsid Ratio",3,2,4,2,"Empty capsids dilute potency and may drive immune response"],
+    ["Potency (Transduction/Infectivity)","Potency","Potency (Transduction/Infectivity)",2,2,5,2,"Direct measure of biological activity"],
+    ["Aggregates","Purity - Product-Related Impurities","Aggregates",4,2,3,2,"Immunogenicity risk from aggregates"],
+    ["Residual Host Cell DNA","Purity - Process-Related Impurities","Residual Host Cell DNA",4,1,1,1,"Regulatory/oncogenic safety concern"],
+    ["Residual Host Cell Protein","Purity - Process-Related Impurities","Residual Host Cell Protein",3,2,1,1,"Immunogenicity risk"],
+    ["Residual Benzonase","Purity - Process-Related Impurities","Purity (Protein)",3,2,1,1,"Process enzyme residual; immunogenicity concern"],
+    ["Residual Plasmid DNA","Purity - Process-Related Impurities","Purity (Protein)",3,2,1,1,"Regulatory concern for residual production DNA"],
+    ["Sterility","Safety","Sterility",5,1,1,1,"Absolute patient safety requirement"],
+    ["Endotoxin","Safety","Endotoxin",5,1,1,1,"Pyrogenic risk to patient"],
+    ["Mycoplasma","Safety","Sterility",5,1,1,1,"Absolute patient safety requirement"],
+    ["pH","General","pH",2,1,2,1,"Affects stability and tolerability"],
+    ["Osmolality","General","Osmolality",2,1,2,1,"Affects tolerability and formulation stability"],
+    ["Appearance / Visible Particulates","General","Appearance",3,2,1,1,"Basic safety/quality screen"],
+    ["Container Closure Integrity","Container Closure","Container Closure Integrity",4,2,2,2,"Breach risks sterility loss over shelf life"],
+    ["Potency Stability (Shelf Life)","Stability","Stability (Shelf Life)",3,3,4,3,"Ensures efficacy is maintained through expiry"]
+  ].map(([name,category,qname,is_,us_,ie_,ue_,rationale])=>({
+    id:uid(), name, category, qtppLink:qByName(qname),
+    impactSafety:is_, uncertaintySafety:us_, impactEfficacy:ie_, uncertaintyEfficacy:ue_,
+    rationale, acceptanceCriterion:'', analyticalMethod:'', ppqJustification:''
+  }));
+
+  const uoDefs = [
+    ["Bioreactor Production", [["Temperature","°C","36.5","37.5"],["pH","pH units","6.9","7.1"],["Dissolved Oxygen (DO)","% saturation","30","50"],["Culture Duration Post-Transfection","hr","60","72"]]],
+    ["Cell Lysis / Harvest", [["Lysis Time","min","30","60"],["Benzonase Concentration","U/mL","25","50"]]],
+    ["Clarification (Depth Filtration)", [["Filter Pore Size","µm","0.2","8"],["Differential Pressure","psi","5","20"]]],
+    ["Affinity Chromatography", [["Load Density","vg/mL resin","1×10^13","5×10^13"],["Elution pH","pH units","2.5","3.0"],["Residence Time","min","2","5"]]],
+    ["Anion Exchange Chromatography (Full/Empty Separation)", [["Gradient Slope","%B/CV","1","3"],["Elution Salt Concentration","mM NaCl","150","300"]]],
+    ["Ultrafiltration/Diafiltration (UF/DF)", [["Transmembrane Pressure (TMP)","psi","5","15"],["Number of Diavolumes","DV","6","10"]]],
+    ["Sterile Filtration (0.2 µm)", [["Filter Pore Size","µm","0.2","0.2"],["Bioburden Load","CFU/mL","0","1"]]],
+    ["Formulation", [["Final Vector Concentration","vg/mL","2×10^13","2×10^13"],["Formulation pH","pH units","7.0","7.4"]]],
+    ["Fill", [["Fill Volume","mL","1.0","1.2"],["Fill Speed","units/hr","1200","1800"]]]
+  ];
+  const unitOps = []; const params = [];
+  uoDefs.forEach(([name, list], idx)=>{
+    const uoId = uid();
+    unitOps.push({id:uoId, name, description:'', order:idx+1, isCustom:false});
+    list.forEach(([pname, unit, low, high])=> params.push({id:uid(), unitOpId:uoId, name:pname, unit, lowSetpoint:low, highSetpoint:high, notes:'', customName:false}));
+  });
+
+  const controlStrategy = [
+    {id:uid(), category:"Facility", description:"Dedicated Grade C/D suite with unidirectional airflow for viral vector production", rationale:"Minimizes cross-contamination risk for open processing steps"},
+    {id:uid(), category:"Personnel / Operators", description:"Gowning qualification and aseptic technique training required before unsupervised operation", rationale:"Reduces microbial and particulate contamination risk"},
+    {id:uid(), category:"Utilities", description:"WFI system with continuous TOC and conductivity monitoring", rationale:"Ensures water quality supporting sterile processing"},
+    {id:uid(), category:"Equipment", description:"Chromatography skids with automated in-line UV/conductivity monitoring and auto-pause on deviation", rationale:"Provides real-time detection and containment of process excursions"}
+  ];
+
+  const supportiveStudies = [
+    {id:uid(), type:"Viral Clearance Validation", ctdRef:SUPPORTIVE_STUDY_TYPES["Viral Clearance Validation"], title:"Viral clearance across AEX and UF/DF unit operations", status:"Planned", riskAssessment:"Adventitious and vector-associated viral risk is not fully mitigated by raw material and in-process testing alone; orthogonal clearance across chromatography and filtration steps provides an independent viral safety margin, consistent with ICH Q5A.", scope:"AEX chromatography and UF/DF steps only, using scaled-down models representative of commercial-scale operating ranges; upstream cell culture and downstream sterile filtration are addressed by separate studies.", objective:"Demonstrate log reduction value (LRV) for relevant/model viruses across the purification train", designSummary:"Scaled-down, qualified models of AEX and UF/DF spiked with model viruses (e.g., xMuLV, MVM); LRV determined per step", acceptanceCriteria:"Cumulative LRV sufficient to support viral safety margin per process", outcome:""},
+    {id:uid(), type:"Sterile Filtration Validation", ctdRef:SUPPORTIVE_STUDY_TYPES["Sterile Filtration Validation"], title:"Bacterial retention validation of 0.2 µm sterilizing-grade filter", status:"Planned", riskAssessment:"Sterile filtration is the final microbial control point prior to fill; filter performance under worst-case process conditions (maximum throughput, pressure, time) must be confirmed to support the sterility claim.", scope:"Sterilizing-grade filter(s) used in the drug substance/drug product sterile filtration step, at worst-case validated process parameters and hold times.", objective:"Confirm filter retains bacterial challenge organism at worst-case process conditions", designSummary:"Brevundimonas diminuta challenge at maximum validated throughput, pressure, and time per ASTM F838", acceptanceCriteria:"No breakthrough at ≥10^7 CFU/cm² challenge", outcome:""},
+    {id:uid(), type:"Extractables & Leachables", ctdRef:SUPPORTIVE_STUDY_TYPES["Extractables & Leachables"], title:"E&L assessment of single-use fluid path and final container", status:"Not Started", riskAssessment:"Product-contact single-use components and the final container may leach compounds into the drug product over processing time and shelf life; patient safety requires these be identified and qualified against a toxicological threshold.", scope:"All product-contact single-use assemblies in the manufacturing process, plus the primary container closure system, evaluated at worst-case contact time and temperature.", objective:"Identify and qualify extractables from product-contact materials and leachables in final container", designSummary:"Simulated/accelerated extraction studies per vendor data and BPOG protocols, followed by targeted leachables study", acceptanceCriteria:"Leachables below safety concern threshold (SCT) per toxicological risk assessment", outcome:""},
+    {id:uid(), type:"Container Closure Integrity", ctdRef:SUPPORTIVE_STUDY_TYPES["Container Closure Integrity"], title:"CCIT of final drug product container closure system", status:"Planned", riskAssessment:"Loss of container closure integrity over shelf life could compromise sterility, directly impacting patient safety; a validated deterministic method is needed to demonstrate integrity is maintained.", scope:"Primary container closure system as used for commercial drug product, evaluated at time zero and at defined stability timepoints through proposed shelf life.", objective:"Demonstrate container closure system maintains sterility over proposed shelf life", designSummary:"Deterministic (e.g., helium leak) method validated and applied at time zero and stability timepoints", acceptanceCriteria:"No detectable leak above method-specific threshold", outcome:""},
+    {id:uid(), type:"Hold Time Study (In-Process)", ctdRef:SUPPORTIVE_STUDY_TYPES["Hold Time Study (In-Process)"], title:"In-process hold time for post-affinity chromatography pool", status:"Not Started", riskAssessment:"Manufacturing schedule flexibility requires holding intermediate material between unit operations; extended or uncontrolled hold could degrade product quality attributes if not bounded by data.", scope:"Post-affinity chromatography pool only, held under proposed temperature and container conditions; other intermediates are addressed by separate hold time studies as applicable.", objective:"Establish maximum hold time and conditions maintaining product quality between unit operations", designSummary:"Representative pool held at proposed temperature/duration and tested against CQA panel at intervals", acceptanceCriteria:"No significant change in CQAs (e.g., titer, purity, potency) across proposed hold duration", outcome:""}
+  ];
+
+  return { qtpps, cqas, unitOps, params, linkages:{}, controlStrategy, supportiveStudies, ppqBatches:[], ppqResults:{} };
+}
+
+async function load(){
+  const statusEl = document.getElementById('saveStatus');
+  let found = false;
+  try{
+    const result = await window.storage.get(STORAGE_KEY, false);
+    if(result && result.value){ state = { qtpps:[], cqas:[], unitOps:[], params:[], linkages:{}, controlStrategy:[], supportiveStudies:[], ppqBatches:[], ppqResults:{}, ...JSON.parse(result.value) }; found = true; }
+  }catch(e){ /* nothing saved yet, or running outside Claude.ai where window.storage isn't available */ }
+  if(!found){ state = buildSeedData(); await save(); }
+  statusEl.textContent = 'Saved';
+  renderEverything();
+}
+async function save(){
+  const statusEl = document.getElementById('saveStatus');
+  try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), false); statusEl.textContent = 'Saved'; }
+  catch(e){ statusEl.textContent = 'Not auto-saving (use Backup)'; }
+}
+
+// ---------- QTPP ----------
+function addQTPP(){ state.qtpps.push({id:uid(), name:'', target:'', justification:''}); save(); renderQTPP(); }
+function updateQTPP(id, field, value){ const q=state.qtpps.find(x=>x.id===id); if(q){ q[field]=value; save(); if(field==='name') renderCQA(); } }
+function deleteQTPP(id){ state.qtpps = state.qtpps.filter(x=>x.id!==id); state.cqas.forEach(c=>{ if(c.qtppLink===id) c.qtppLink=''; }); save(); renderQTPP(); renderCQA(); }
+function renderQTPP(){
+  const body = document.getElementById('qtppBody');
+  document.getElementById('qtppEmpty').style.display = state.qtpps.length ? 'none' : 'block';
+  body.innerHTML = state.qtpps.map(q=>`
+    <tr>
+      <td><input type="text" value="${esc(q.name)}" placeholder="e.g. Capsid identity" oninput="updateQTPP('${q.id}','name',this.value)"></td>
+      <td><input type="text" value="${esc(q.target)}" placeholder="e.g. ≥95% by ddPCR" oninput="updateQTPP('${q.id}','target',this.value)"></td>
+      <td><textarea placeholder="Why this target" oninput="updateQTPP('${q.id}','justification',this.value)">${esc(q.justification)}</textarea></td>
+      <td class="row-actions"><button class="icon" onclick="deleteQTPP('${q.id}')" title="Remove">✕</button></td>
+    </tr>`).join('');
+}
+
+// ---------- CQA / Level 1A ----------
+function axisRisk(impact, uncertainty){
+  const i = impact||1, u = uncertainty||1, score = i*u;
+  let cls; if(i===5) cls='CQA'; else if(score>=15) cls='CQA'; else if(score>=6) cls='pCQA'; else cls='Non-CQA';
+  return {score, cls};
+}
+const CLASS_RANK = {CQA:3,pCQA:2,'Non-CQA':1};
+function computeCQA(c){
+  const s = axisRisk(c.impactSafety, c.uncertaintySafety);
+  const e = axisRisk(c.impactEfficacy, c.uncertaintyEfficacy);
+  const classification = CLASS_RANK[s.cls] >= CLASS_RANK[e.cls] ? s.cls : e.cls;
+  return { safetyScore:s.score, efficacyScore:e.score, classification };
+}
+function addCQA(){
+  state.cqas.push({id:uid(), name:'', category:'General', qtppLink:'', impactSafety:1, uncertaintySafety:1, impactEfficacy:1, uncertaintyEfficacy:1, rationale:'', acceptanceCriterion:'', analyticalMethod:'', ppqJustification:''});
+  save(); renderCQA();
+}
+function updateCQA(id, field, value){
+  const c = state.cqas.find(x=>x.id===id); if(!c) return;
+  if(['impactSafety','uncertaintySafety','impactEfficacy','uncertaintyEfficacy'].includes(field)) value = parseInt(value,10);
+  c[field] = value; save(); renderCQA();
+}
+function deleteCQA(id){ state.cqas = state.cqas.filter(x=>x.id!==id); save(); renderCQA(); }
+function scoreOptions(selected){ return [1,2,3,4,5].map(n=>`<option value="${n}" ${n===selected?'selected':''}>${n}</option>`).join(''); }
+function renderCqaFilterBar(){
+  document.getElementById('cqaFilterBar').innerHTML = `<div class="filter-bar">
+    <label>Category <select onchange="ui.cqaCategory=this.value; renderCQA();"><option value="">All</option>${CQA_CATEGORIES.map(cat=>`<option value="${cat}" ${ui.cqaCategory===cat?'selected':''}>${cat}</option>`).join('')}</select></label>
+    <label>Classification <select onchange="ui.cqaClass=this.value; renderCQA();"><option value="">All</option><option ${ui.cqaClass==='CQA'?'selected':''}>CQA</option><option ${ui.cqaClass==='pCQA'?'selected':''}>pCQA</option><option ${ui.cqaClass==='Non-CQA'?'selected':''}>Non-CQA</option></select></label>
+  </div>`;
+}
+function renderCQA(){
+  renderCqaFilterBar();
+  const mapped = state.cqas.map(c=>({...c, ...computeCQA(c)}));
+  const rows = mapped.filter(c=> (!ui.cqaCategory||c.category===ui.cqaCategory) && (!ui.cqaClass||c.classification===ui.cqaClass) );
+  const body = document.getElementById('cqaBody');
+  document.getElementById('cqaEmpty').style.display = rows.length ? 'none' : 'block';
+  body.innerHTML = rows.map(c=>`<tr>
+      <td><input type="text" value="${esc(c.name)}" placeholder="e.g. Full/empty capsid ratio" oninput="updateCQA('${c.id}','name',this.value)"></td>
+      <td><select onchange="updateCQA('${c.id}','category',this.value)">${CQA_CATEGORIES.map(cat=>`<option value="${cat}" ${c.category===cat?'selected':''}>${cat}</option>`).join('')}</select></td>
+      <td><select onchange="updateCQA('${c.id}','qtppLink',this.value)"><option value="">—</option>${state.qtpps.map(q=>`<option value="${q.id}" ${c.qtppLink===q.id?'selected':''}>${esc(q.name)||'(unnamed)'}</option>`).join('')}</select></td>
+      <td><select onchange="updateCQA('${c.id}','impactSafety',this.value)">${scoreOptions(c.impactSafety)}</select></td>
+      <td><select onchange="updateCQA('${c.id}','uncertaintySafety',this.value)">${scoreOptions(c.uncertaintySafety)}</select></td>
+      <td><select onchange="updateCQA('${c.id}','impactEfficacy',this.value)">${scoreOptions(c.impactEfficacy)}</select></td>
+      <td><select onchange="updateCQA('${c.id}','uncertaintyEfficacy',this.value)">${scoreOptions(c.uncertaintyEfficacy)}</select></td>
+      <td class="num">${c.safetyScore}</td>
+      <td class="num">${c.efficacyScore}</td>
+      <td><span class="tag ${c.classification}">${c.classification}</span></td>
+      <td><textarea placeholder="Basis for scoring" oninput="updateCQA('${c.id}','rationale',this.value)">${esc(c.rationale)}</textarea></td>
+      <td class="row-actions"><button class="icon" onclick="deleteCQA('${c.id}')" title="Remove">✕</button></td>
+    </tr>`).join('');
+  renderSummary();
+}
+function relevantCQAs(){ return state.cqas.map(c=>({...c, ...computeCQA(c)})).filter(c=> c.classification==='CQA' || c.classification==='pCQA'); }
+
+// ---------- Process Flow ----------
+function addUnitOp(){ state.unitOps.push({id:uid(), name:'', description:'', order:state.unitOps.length+1, isCustom:false}); save(); renderProcess(); }
+function selectUnitOp(id, value){ const u=state.unitOps.find(x=>x.id===id); if(!u) return; if(value===CUSTOM_UO){u.isCustom=true;u.name='';} else {u.isCustom=false;u.name=value;} save(); renderProcess(); }
+function revertUnitOpToList(id){ const u=state.unitOps.find(x=>x.id===id); if(!u) return; u.isCustom=false; u.name=''; save(); renderProcess(); }
+function updateUnitOp(id, field, value){ const u=state.unitOps.find(x=>x.id===id); if(u){ u[field]=value; save(); } }
+function moveUnitOp(id, dir){
+  const idx = state.unitOps.findIndex(x=>x.id===id); const swap = idx+dir;
+  if(swap<0 || swap>=state.unitOps.length) return;
+  [state.unitOps[idx], state.unitOps[swap]] = [state.unitOps[swap], state.unitOps[idx]];
+  state.unitOps.forEach((u,i)=>u.order=i+1); save(); renderProcess();
+}
+function deleteUnitOp(id){
+  state.unitOps = state.unitOps.filter(x=>x.id!==id);
+  state.params = state.params.filter(p=>p.unitOpId!==id);
+  state.unitOps.forEach((u,i)=>u.order=i+1);
+  save(); renderProcess(); renderLinkage();
+}
+function addParam(unitOpId){ state.params.push({id:uid(), unitOpId, name:'', unit:'', lowSetpoint:'', highSetpoint:'', notes:'', customName:false}); save(); renderProcess(); }
+function selectParam(id, value){
+  const p = state.params.find(x=>x.id===id); if(!p) return;
+  if(value===CUSTOM_PARAM){ p.customName=true; p.name=''; }
+  else {
+    p.customName=false; p.name=value;
+    const u = state.unitOps.find(x=>x.id===p.unitOpId);
+    const lib = u && !u.isCustom ? AAV_LIBRARY[u.name] : null;
+    if(lib && lib.params[value]) p.unit = lib.params[value];
+  }
+  save(); renderProcess();
+}
+function revertParamToList(id){ const p=state.params.find(x=>x.id===id); if(!p) return; p.customName=false; p.name=''; save(); renderProcess(); }
+function updateParam(id, field, value){ const p=state.params.find(x=>x.id===id); if(p){ p[field]=value; save(); } }
+function deleteParam(id){
+  state.params = state.params.filter(x=>x.id!==id);
+  Object.keys(state.linkages).forEach(k=>{ if(k.startsWith(id+'|')) delete state.linkages[k]; });
+  save(); renderProcess(); renderLinkage();
+}
+function renderProcessFilterBar(){
+  document.getElementById('processFilterBar').innerHTML = `<div class="filter-bar"><label>Unit Operation <select onchange="ui.uo=this.value; renderProcess();"><option value="">All</option>${state.unitOps.map(u=>`<option value="${u.id}" ${ui.uo===u.id?'selected':''}>${u.order}. ${esc(u.name)||'(unnamed)'}</option>`).join('')}</select></label></div>`;
+}
+function renderProcess(){
+  renderProcessFilterBar();
+  const list = document.getElementById('unitOpsList');
+  const uos = state.unitOps.filter(u=> !ui.uo || u.id===ui.uo);
+  if(!uos.length){ list.innerHTML = '<div class="empty">No unit operations match the current filter.</div>'; return; }
+  list.innerHTML = uos.map((u)=>{
+    const i = state.unitOps.findIndex(x=>x.id===u.id);
+    return `<div class="unitop">
+      <div class="unitop-head">
+        <span class="order">${u.order}.</span>
+        ${u.isCustom
+          ? `<input type="text" value="${esc(u.name)}" placeholder="Custom unit operation name" oninput="updateUnitOp('${u.id}','name',this.value)"><button class="icon" onclick="revertUnitOpToList('${u.id}')" title="Choose from list">☰</button>`
+          : `<select onchange="selectUnitOp('${u.id}',this.value)">
+              <option value="" ${!u.name?'selected':''} disabled>Select unit operation…</option>
+              ${STAGE_ORDER.map(stage=>`<optgroup label="${stage}">${Object.keys(AAV_LIBRARY).filter(k=>AAV_LIBRARY[k].stage===stage).map(k=>`<option value="${esc(k)}" ${u.name===k?'selected':''}>${esc(k)}</option>`).join('')}</optgroup>`).join('')}
+              <option value="${CUSTOM_UO}">+ Custom unit operation…</option>
+            </select>`}
+        <div class="unitop-actions">
+          <button class="icon" onclick="moveUnitOp('${u.id}',-1)" ${i===0?'disabled':''} title="Move up">↑</button>
+          <button class="icon" onclick="moveUnitOp('${u.id}',1)" ${i===state.unitOps.length-1?'disabled':''} title="Move down">↓</button>
+          <button class="icon" onclick="deleteUnitOp('${u.id}')" title="Remove">✕</button>
+        </div>
+      </div>
+      <div class="unitop-body">
+        <div class="unitop-desc"><textarea placeholder="Brief description of this step" oninput="updateUnitOp('${u.id}','description',this.value)">${esc(u.description)}</textarea></div>
+        <div id="params-${u.id}"></div>
+        <button class="add-btn" style="margin-top:4px;" onclick="addParam('${u.id}')">+ Add process parameter</button>
+      </div>
+    </div>`;
+  }).join('');
+  uos.forEach(u=>renderParamsFor(u.id));
+}
+function renderParamsFor(unitOpId){
+  const container = document.getElementById('params-'+unitOpId); if(!container) return;
+  const u = state.unitOps.find(x=>x.id===unitOpId);
+  const lib = u && !u.isCustom ? (AAV_LIBRARY[u.name]||{}).params : null;
+  const ps = state.params.filter(p=>p.unitOpId===unitOpId);
+  container.innerHTML = ps.map(p=>{
+    const nameField = (lib && !p.customName)
+      ? `<select onchange="selectParam('${p.id}',this.value)"><option value="" ${!p.name?'selected':''} disabled>Select parameter…</option>${Object.keys(lib).map(n=>`<option value="${esc(n)}" ${p.name===n?'selected':''}>${esc(n)}</option>`).join('')}<option value="${CUSTOM_PARAM}">+ Custom parameter…</option></select>`
+      : lib
+        ? `<div style="display:flex;gap:4px;"><input type="text" value="${esc(p.name)}" placeholder="Custom parameter name" oninput="updateParam('${p.id}','name',this.value)"><button class="icon" onclick="revertParamToList('${p.id}')" title="Choose from list">☰</button></div>`
+        : `<input type="text" value="${esc(p.name)}" placeholder="Parameter, e.g. TMP" oninput="updateParam('${p.id}','name',this.value)">`;
+    return `<div class="param-block">
+      <div class="param-row-top">
+        ${nameField}
+        <input type="text" value="${esc(p.unit)}" placeholder="Unit" oninput="updateParam('${p.id}','unit',this.value)">
+        <button class="icon" onclick="deleteParam('${p.id}')" title="Remove">✕</button>
+      </div>
+      <div class="param-row-bottom">
+        <input type="text" value="${esc(p.lowSetpoint)}" placeholder="Low Setpoint" oninput="updateParam('${p.id}','lowSetpoint',this.value)">
+        <input type="text" value="${esc(p.highSetpoint)}" placeholder="High Setpoint" oninput="updateParam('${p.id}','highSetpoint',this.value)">
+        <input type="text" value="${esc(p.notes)}" placeholder="Notes" oninput="updateParam('${p.id}','notes',this.value)">
+      </div>
+    </div>`;
+  }).join('');
+}
+function paramLabel(p){ return esc(p.name)||'(unnamed)'; }
+function paramUnitSuffix(p){ return p.unit ? `<span class="unit-suffix">${esc(p.unit)}</span>` : ''; }
+function levelClass(n){ return 'l'+n; }
+function groupByUO(paramsList){
+  const map = new Map();
+  paramsList.forEach(p=>{ if(!map.has(p.unitOpId)) map.set(p.unitOpId,[]); map.get(p.unitOpId).push(p); });
+  return state.unitOps.filter(u=>map.has(u.id)).map(u=>({unitOp:u, params:map.get(u.id)}));
+}
+function applyUOFilter(groups){ return ui.uo ? groups.filter(g=>g.unitOp.id===ui.uo) : groups; }
+
+// ---------- Linkage ----------
+function linkageKey(paramId, cqaId){ return paramId+'|'+cqaId; }
+function updateLinkage(paramId, cqaId, value){ state.linkages[linkageKey(paramId,cqaId)] = parseInt(value,10); save(); renderLinkage(); }
+function maxLinkageForParam(paramId, cqas){ const scores = cqas.map(c=>state.linkages[linkageKey(paramId,c.id)]||0); return scores.length?Math.max(...scores):0; }
+function renderLinkageFilterBar(){
+  document.getElementById('linkageFilterBar').innerHTML = `<div class="filter-bar"><label>Unit Operation <select onchange="ui.uo=this.value; renderLinkage();"><option value="">All</option>${state.unitOps.map(u=>`<option value="${u.id}" ${ui.uo===u.id?'selected':''}>${u.order}. ${esc(u.name)||'(unnamed)'}</option>`).join('')}</select></label></div>`;
+}
+function renderLinkage(){
+  renderLinkageFilterBar();
+  const cqas = relevantCQAs();
+  const wrap = document.getElementById('linkageMatrix');
+  if(!state.params.length || !cqas.length){
+    wrap.innerHTML = `<div class="empty">${!state.params.length ? 'Add process parameters in the Process Flow tab.' : 'No CQA/pCQA attributes yet.'}</div>`;
+  } else {
+    const groups = applyUOFilter(groupByUO(state.params));
+    const colCount = 1 + cqas.length;
+    if(!groups.length){ wrap.innerHTML = '<div class="empty">No parameters match the current filter.</div>'; }
+    else {
+      wrap.innerHTML = `<table class="matrix">
+        <thead><tr><th class="rowhead">Parameter</th>${cqas.map(c=>`<th class="colhead">${esc(c.name)||'(unnamed)'}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${groups.map(g=>`
+            <tr class="uo-group-row"><td colspan="${colCount}">${g.unitOp.order}. ${esc(g.unitOp.name)||'(unnamed)'}</td></tr>
+            ${g.params.map(p=>`<tr><th class="rowhead">${paramLabel(p)}${paramUnitSuffix(p)}</th>${cqas.map(c=>{
+              const val = state.linkages[linkageKey(p.id,c.id)]||0;
+              return `<td class="${levelClass(val)}"><select onchange="updateLinkage('${p.id}','${c.id}',this.value)">${[0,1,2,3,4,5].map(n=>`<option value="${n}" ${n===val?'selected':''}>${n}</option>`).join('')}</select></td>`;
+            }).join('')}</tr>`).join('')}
+          `).join('')}
+        </tbody>
+      </table>`;
+    }
+  }
+  renderModule2Report(cqas);
+}
+function renderModule2Report(cqas){
+  const el = document.getElementById('module2Report');
+  if(!state.unitOps.length){ el.innerHTML = '<div class="empty">No process data yet.</div>'; return; }
+  el.innerHTML = state.unitOps.map(u=>{
+    const ps = state.params.filter(p=>p.unitOpId===u.id);
+    const rows = ps.map(p=>{
+      const max = maxLinkageForParam(p.id, cqas);
+      return `<tr><td>${paramLabel(p)}</td><td>${esc(p.unit)||'—'}</td><td>${esc(p.lowSetpoint)||'—'}</td><td>${esc(p.highSetpoint)||'—'}</td><td>${esc(p.notes)||'—'}</td><td class="${levelClass(max)}">${max}</td></tr>`;
+    }).join('');
+    return `<div style="margin-bottom:14px;"><div style="font-weight:600;margin-bottom:6px;">${u.order}. ${esc(u.name)||'(unnamed)'}</div>
+      ${ps.length ? `<table><thead><tr><th>Parameter</th><th style="width:60px">Unit</th><th style="width:90px">Low Setpoint</th><th style="width:90px">High Setpoint</th><th>Notes</th><th style="width:100px">Max Linkage</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty">No parameters</div>'}</div>`;
+  }).join('');
+}
+
+// ---------- Classification ----------
+function suggestClassification(maxScore){ return maxScore>=4 ? 'CPP' : 'Non-CPP'; }
+function getEffectiveClassification(p, cqas){ return p.classification || suggestClassification(maxLinkageForParam(p.id, cqas)); }
+function updateClassification(paramId, field, value){ const p=state.params.find(x=>x.id===paramId); if(!p) return; p[field]=value; save(); renderClassification(); }
+function renderClassifyFilterBar(){
+  document.getElementById('classifyFilterBar').innerHTML = `<div class="filter-bar">
+    <label>Unit Operation <select onchange="ui.uo=this.value; renderClassification();"><option value="">All</option>${state.unitOps.map(u=>`<option value="${u.id}" ${ui.uo===u.id?'selected':''}>${u.order}. ${esc(u.name)||'(unnamed)'}</option>`).join('')}</select></label>
+    <label>Classification <select onchange="ui.classFilter=this.value; renderClassification();"><option value="">All</option><option ${ui.classFilter==='CPP'?'selected':''}>CPP</option><option ${ui.classFilter==='KPP'?'selected':''}>KPP</option><option value="Non-CPP" ${ui.classFilter==='Non-CPP'?'selected':''}>Non-CPP</option></select></label>
+  </div>`;
+}
+function renderClassification(){
+  renderClassifyFilterBar();
+  const cqas = relevantCQAs();
+  let groups = applyUOFilter(groupByUO(state.params));
+  if(ui.classFilter){ groups = groups.map(g=>({unitOp:g.unitOp, params:g.params.filter(p=>getEffectiveClassification(p,cqas)===ui.classFilter)})).filter(g=>g.params.length); }
+  const body = document.getElementById('classifyBody');
+  document.getElementById('classifyEmpty').style.display = groups.length ? 'none' : 'block';
+  body.innerHTML = groups.map(g=>`
+    <tr class="uo-group-row"><td colspan="5">${g.unitOp.order}. ${esc(g.unitOp.name)||'(unnamed)'}</td></tr>
+    ${g.params.map(p=>{
+      const max = maxLinkageForParam(p.id, cqas);
+      const suggested = suggestClassification(max);
+      const current = p.classification || suggested;
+      return `<tr>
+        <td>${paramLabel(p)}${paramUnitSuffix(p)}</td>
+        <td class="${levelClass(max)}" style="text-align:center;">${max}</td>
+        <td><span class="tag ${suggested}">${suggested}</span></td>
+        <td><select onchange="updateClassification('${p.id}','classification',this.value)">
+          <option value="CPP" ${current==='CPP'?'selected':''}>CPP</option>
+          <option value="KPP" ${current==='KPP'?'selected':''}>KPP</option>
+          <option value="Non-CPP" ${current==='Non-CPP'?'selected':''}>Non-CPP</option>
+        </select></td>
+        <td><textarea placeholder="Basis for classification" oninput="updateClassification('${p.id}','classificationRationale',this.value)">${esc(p.classificationRationale)}</textarea></td>
+      </tr>`;
+    }).join('')}
+  `).join('');
+  renderClassifyReport(cqas);
+}
+function renderClassifyReport(cqas){
+  const groups = {CPP:[],KPP:[],'Non-CPP':[]};
+  state.params.forEach(p=>groups[getEffectiveClassification(p,cqas)].push(p));
+  document.getElementById('classifyStats').innerHTML = `
+    <div class="stat CPP"><div class="n">${groups.CPP.length}</div><div class="l">CPP</div></div>
+    <div class="stat KPP"><div class="n">${groups.KPP.length}</div><div class="l">KPP</div></div>
+    <div class="stat Non-CPP"><div class="n">${groups['Non-CPP'].length}</div><div class="l">Non-CPP</div></div>`;
+  const section = (label, items) => `<div style="margin-bottom:16px;"><h2 style="font-size:13.5px;margin-bottom:8px;">${label} (${items.length})</h2>
+    ${items.length ? `<table><thead><tr><th>Parameter</th><th>Unit Operation</th><th>Rationale</th></tr></thead><tbody>${items.map(p=>{
+      const u=state.unitOps.find(x=>x.id===p.unitOpId);
+      return `<tr><td>${paramLabel(p)}</td><td>${esc(u?u.name:'')||'—'}</td><td>${esc(p.classificationRationale)||'—'}</td></tr>`;
+    }).join('')}</tbody></table>` : '<div class="empty">None</div>'}</div>`;
+  document.getElementById('classifyReport').innerHTML = section('Critical Process Parameters (CPP)',groups.CPP)+section('Key Process Parameters (KPP)',groups.KPP)+section('Non-CPP',groups['Non-CPP']);
+}
+
+// ---------- FMEA 2A ----------
+function rpnTier(rpn){ return rpn>=60?'High':rpn>=20?'Medium':'Low'; }
+function updateFmea(paramId, field, value){ const p=state.params.find(x=>x.id===paramId); if(!p) return; if(['severity','occurrence','detection'].includes(field)) value=parseInt(value,10); p[field]=value; save(); renderFmea2a(); }
+function renderFmea2aFilterBar(){
+  document.getElementById('fmea2aFilterBar').innerHTML = `<div class="filter-bar">
+    <label>Unit Operation <select onchange="ui.uo=this.value; renderFmea2a();"><option value="">All</option>${state.unitOps.map(u=>`<option value="${u.id}" ${ui.uo===u.id?'selected':''}>${u.order}. ${esc(u.name)||'(unnamed)'}</option>`).join('')}</select></label>
+    <label>Tier <select onchange="ui.tier=this.value; renderFmea2a();"><option value="">All</option><option ${ui.tier==='High'?'selected':''}>High</option><option ${ui.tier==='Medium'?'selected':''}>Medium</option><option ${ui.tier==='Low'?'selected':''}>Low</option></select></label>
+  </div>`;
+}
+function renderFmea2a(){
+  renderFmea2aFilterBar();
+  const cqas = relevantCQAs();
+  const cppKpp = state.params.filter(p=>['CPP','KPP'].includes(getEffectiveClassification(p,cqas)));
+  let groups = applyUOFilter(groupByUO(cppKpp));
+  if(ui.tier){ groups = groups.map(g=>({unitOp:g.unitOp, params:g.params.filter(p=>{ const s=p.severity||1,o=p.occurrence||1,d=p.detection||1; return rpnTier(s*o*d)===ui.tier; })})).filter(g=>g.params.length); }
+  const body = document.getElementById('fmea2aBody');
+  document.getElementById('fmea2aEmpty').style.display = groups.length ? 'none' : 'block';
+  body.innerHTML = groups.map(g=>`
+    <tr class="uo-group-row"><td colspan="9">${g.unitOp.order}. ${esc(g.unitOp.name)||'(unnamed)'}</td></tr>
+    ${g.params.map(p=>{
+      const cls = getEffectiveClassification(p,cqas);
+      const s=p.severity||1,o=p.occurrence||1,d=p.detection||1, rpn=s*o*d, tier=rpnTier(rpn);
+      return `<tr>
+        <td>${paramLabel(p)}${paramUnitSuffix(p)}</td>
+        <td><span class="tag ${cls}">${cls}</span></td>
+        <td><input type="text" value="${esc(p.failureMode)}" placeholder="e.g. Parameter drifts outside range" oninput="updateFmea('${p.id}','failureMode',this.value)"></td>
+        <td><select onchange="updateFmea('${p.id}','severity',this.value)">${scoreOptions(s)}</select></td>
+        <td><select onchange="updateFmea('${p.id}','occurrence',this.value)">${scoreOptions(o)}</select></td>
+        <td><select onchange="updateFmea('${p.id}','detection',this.value)">${scoreOptions(d)}</select></td>
+        <td class="num">${rpn}</td>
+        <td><span class="tag ${tier}">${tier}</span></td>
+        <td><textarea placeholder="Basis for scoring" oninput="updateFmea('${p.id}','fmeaRationale',this.value)">${esc(p.fmeaRationale)}</textarea></td>
+      </tr>`;
+    }).join('')}
+  `).join('');
+  renderFmea2aReport(cppKpp);
+}
+function renderFmea2aReport(params){
+  const groups = {High:[],Medium:[],Low:[]};
+  params.forEach(p=>{ const s=p.severity||1,o=p.occurrence||1,d=p.detection||1; groups[rpnTier(s*o*d)].push(p); });
+  document.getElementById('fmea2aStats').innerHTML = `
+    <div class="stat High"><div class="n">${groups.High.length}</div><div class="l">High</div></div>
+    <div class="stat Medium"><div class="n">${groups.Medium.length}</div><div class="l">Medium</div></div>
+    <div class="stat Low"><div class="n">${groups.Low.length}</div><div class="l">Low</div></div>`;
+  const section = (label, items) => `<div style="margin-bottom:16px;"><h2 style="font-size:13.5px;margin-bottom:8px;">${label} (${items.length})</h2>
+    ${items.length ? `<table><thead><tr><th>Parameter</th><th>Failure Mode</th><th>Rationale</th></tr></thead><tbody>${items.map(p=>`<tr><td>${paramLabel(p)}${paramUnitSuffix(p)}</td><td>${esc(p.failureMode)||'—'}</td><td>${esc(p.fmeaRationale)||'—'}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">None</div>'}</div>`;
+  document.getElementById('fmea2aReport').innerHTML = section('High Risk',groups.High)+section('Medium Risk',groups.Medium)+section('Low Risk',groups.Low);
+}
+
+// ---------- Characterization Plan ----------
+function highRiskParams(){
+  const cqas = relevantCQAs();
+  return state.params.filter(p=>{
+    const cls = getEffectiveClassification(p,cqas);
+    if(!['CPP','KPP'].includes(cls)) return false;
+    const s=p.severity||1,o=p.occurrence||1,d=p.detection||1;
+    return rpnTier(s*o*d)==='High';
+  });
+}
+function updatePC(paramId, field, value){ const p=state.params.find(x=>x.id===paramId); if(!p) return; p[field]=value; save(); renderPCPlan(); }
+function suggestStudyMode(count){ return count>=2 ? `Multivariate DOE recommended (${count} high-risk parameters share this unit operation)` : 'Univariate / OFAT study sufficient (1 high-risk parameter)'; }
+function renderPcplanFilterBar(){
+  document.getElementById('pcplanFilterBar').innerHTML = `<div class="filter-bar"><label>Unit Operation <select onchange="ui.uo=this.value; renderPCPlan();"><option value="">All</option>${state.unitOps.map(u=>`<option value="${u.id}" ${ui.uo===u.id?'selected':''}>${u.order}. ${esc(u.name)||'(unnamed)'}</option>`).join('')}</select></label></div>`;
+}
+function renderPCPlan(){
+  renderPcplanFilterBar();
+  const groups = applyUOFilter(groupByUO(highRiskParams()));
+  const container = document.getElementById('pcplanBody');
+  document.getElementById('pcplanEmpty').style.display = groups.length ? 'none' : 'block';
+  container.innerHTML = groups.map(g=>`
+    <div class="unitop">
+      <div class="unitop-head" style="background:#EEF0EC;">
+        <span class="order">${g.unitOp.order}.</span>
+        <div style="flex:1;font-weight:600;">${esc(g.unitOp.name)||'(unnamed)'} — <span style="font-weight:400;color:var(--ink-soft);">${suggestStudyMode(g.params.length)}</span></div>
+      </div>
+      <div class="unitop-body">
+        <div class="table-scroll"><table>
+          <thead><tr><th style="width:16%">Parameter</th><th style="width:22%">Proposed Study Range</th><th style="width:18%">DOE Design Type</th><th style="width:22%">Materials / Resources Required</th><th>Notes</th></tr></thead>
+          <tbody>
+            ${g.params.map(p=>`<tr>
+              <td>${paramLabel(p)}${paramUnitSuffix(p)}</td>
+              <td><div class="num-pair"><input type="text" value="${esc(p.pcRangeLow)}" placeholder="Low Setpoint" oninput="updatePC('${p.id}','pcRangeLow',this.value)">–<input type="text" value="${esc(p.pcRangeHigh)}" placeholder="High Setpoint" oninput="updatePC('${p.id}','pcRangeHigh',this.value)">${paramUnitSuffix(p)}</div></td>
+              <td><select onchange="updatePC('${p.id}','doeType',this.value)"><option value="" ${!p.doeType?'selected':''} disabled>Select…</option>${DOE_TYPES.map(t=>`<option value="${t}" ${p.doeType===t?'selected':''}>${t}</option>`).join('')}</select></td>
+              <td><textarea placeholder="e.g. 3 resin lots, scale-down column" oninput="updatePC('${p.id}','pcMaterials',this.value)">${esc(p.pcMaterials)}</textarea></td>
+              <td><textarea placeholder="Notes" oninput="updatePC('${p.id}','pcNotes',this.value)">${esc(p.pcNotes)}</textarea></td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </div>
+    </div>`).join('');
+  renderPCPlanReport(groups.flatMap(g=>g.params));
+}
+function renderPCPlanReport(params){
+  const el = document.getElementById('pcplanReport');
+  if(!params.length){ el.innerHTML='<div class="empty">No high-risk parameters yet.</div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Parameter</th><th>Study Range</th><th>DOE Type</th><th>Materials Required</th></tr></thead><tbody>
+    ${params.map(p=>`<tr><td>${paramLabel(p)}</td><td>${esc(p.pcRangeLow)||'—'}–${esc(p.pcRangeHigh)||'—'} ${esc(p.unit)}</td><td>${esc(p.doeType)||'—'}</td><td>${esc(p.pcMaterials)||'—'}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ---------- FMEA 2B / Control Strategy ----------
+function updateFmea2b(paramId, field, value){ const p=state.params.find(x=>x.id===paramId); if(!p) return; if(['severity2','occurrence2','detection2'].includes(field)) value=parseInt(value,10); p[field]=value; save(); renderFmea2b(); }
+function renderFmea2bFilterBar(){
+  document.getElementById('fmea2bFilterBar').innerHTML = `<div class="filter-bar">
+    <label>Unit Operation <select onchange="ui.uo=this.value; renderFmea2b();"><option value="">All</option>${state.unitOps.map(u=>`<option value="${u.id}" ${ui.uo===u.id?'selected':''}>${u.order}. ${esc(u.name)||'(unnamed)'}</option>`).join('')}</select></label>
+    <label>Tier <select onchange="ui.tier=this.value; renderFmea2b();"><option value="">All</option><option ${ui.tier==='High'?'selected':''}>High</option><option ${ui.tier==='Medium'?'selected':''}>Medium</option><option ${ui.tier==='Low'?'selected':''}>Low</option></select></label>
+  </div>`;
+}
+function renderFmea2b(){
+  renderFmea2bFilterBar();
+  let groups = applyUOFilter(groupByUO(highRiskParams()));
+  if(ui.tier){ groups = groups.map(g=>({unitOp:g.unitOp, params:g.params.filter(p=>{ const s=p.severity2||p.severity||1,o=p.occurrence2||1,d=p.detection2||1; return rpnTier(s*o*d)===ui.tier; })})).filter(g=>g.params.length); }
+  const body = document.getElementById('fmea2bBody');
+  document.getElementById('fmea2bEmpty').style.display = groups.length ? 'none' : 'block';
+  body.innerHTML = groups.map(g=>`
+    <tr class="uo-group-row"><td colspan="12">${g.unitOp.order}. ${esc(g.unitOp.name)||'(unnamed)'}</td></tr>
+    ${g.params.map(p=>{
+      const s=p.severity2||p.severity||1, o=p.occurrence2||1, d=p.detection2||1, rpn=s*o*d, tier=rpnTier(rpn);
+      return `<tr>
+        <td>${paramLabel(p)}${paramUnitSuffix(p)}</td>
+        <td><div class="num-pair"><input type="text" value="${esc(p.parLow)}" placeholder="Low Setpoint" oninput="updateFmea2b('${p.id}','parLow',this.value)">–<input type="text" value="${esc(p.parHigh)}" placeholder="High Setpoint" oninput="updateFmea2b('${p.id}','parHigh',this.value)"></div></td>
+        <td><div class="num-pair"><input type="text" value="${esc(p.norLow)}" placeholder="Low Setpoint" oninput="updateFmea2b('${p.id}','norLow',this.value)">–<input type="text" value="${esc(p.norHigh)}" placeholder="High Setpoint" oninput="updateFmea2b('${p.id}','norHigh',this.value)"></div></td>
+        <td><textarea placeholder="e.g. Univariate; PAR = Design Space" oninput="updateFmea2b('${p.id}','designSpace',this.value)">${esc(p.designSpace)}</textarea></td>
+        <td><div class="num-pair"><input type="text" value="${esc(p.actionLow)}" placeholder="Low Setpoint" oninput="updateFmea2b('${p.id}','actionLow',this.value)">–<input type="text" value="${esc(p.actionHigh)}" placeholder="High Setpoint" oninput="updateFmea2b('${p.id}','actionHigh',this.value)"></div></td>
+        <td><textarea placeholder="e.g. Stop process, notify supervisor, initiate deviation" oninput="updateFmea2b('${p.id}','actionLowResponse',this.value)">${esc(p.actionLowResponse)}</textarea></td>
+        <td><textarea placeholder="e.g. Stop process, notify supervisor, initiate deviation" oninput="updateFmea2b('${p.id}','actionHighResponse',this.value)">${esc(p.actionHighResponse)}</textarea></td>
+        <td><select onchange="updateFmea2b('${p.id}','severity2',this.value)">${scoreOptions(s)}</select></td>
+        <td><select onchange="updateFmea2b('${p.id}','occurrence2',this.value)">${scoreOptions(o)}</select></td>
+        <td><select onchange="updateFmea2b('${p.id}','detection2',this.value)">${scoreOptions(d)}</select></td>
+        <td class="num">${rpn}</td>
+        <td><span class="tag ${tier}">${tier}</span></td>
+      </tr>`;
+    }).join('')}
+  `).join('');
+  renderFmea2bReport(groups.flatMap(g=>g.params));
+  renderControlStrategy();
+}
+function renderFmea2bReport(params){
+  const el = document.getElementById('fmea2bReport');
+  if(!params.length){ el.innerHTML = '<div class="empty">No characterized parameters yet.</div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Parameter</th><th>PAR</th><th>NOR</th><th>Action Limit</th><th>Updated Tier</th></tr></thead><tbody>
+    ${params.map(p=>{
+      const s=p.severity2||p.severity||1,o=p.occurrence2||1,d=p.detection2||1, tier=rpnTier(s*o*d);
+      return `<tr><td>${paramLabel(p)}</td><td>${esc(p.parLow)||'—'}–${esc(p.parHigh)||'—'} ${esc(p.unit)}</td><td>${esc(p.norLow)||'—'}–${esc(p.norHigh)||'—'} ${esc(p.unit)}</td><td>${esc(p.actionLow)||'—'}–${esc(p.actionHigh)||'—'} ${esc(p.unit)}</td><td><span class="tag ${tier}">${tier}</span></td></tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+function addControlStrategy(){ state.controlStrategy.push({id:uid(), category:'Facility', description:'', rationale:''}); save(); renderControlStrategy(); }
+function updateControlStrategy(id, field, value){ const cs=state.controlStrategy.find(x=>x.id===id); if(cs){ cs[field]=value; save(); } }
+function deleteControlStrategy(id){ state.controlStrategy = state.controlStrategy.filter(x=>x.id!==id); save(); renderControlStrategy(); }
+function renderControlStrategy(){
+  const body = document.getElementById('controlStrategyBody'); if(!body) return;
+  document.getElementById('controlStrategyEmpty').style.display = state.controlStrategy.length ? 'none' : 'block';
+  body.innerHTML = state.controlStrategy.map(cs=>`
+    <tr>
+      <td><select onchange="updateControlStrategy('${cs.id}','category',this.value)">${CONTROL_CATEGORIES.map(cat=>`<option value="${cat}" ${cs.category===cat?'selected':''}>${cat}</option>`).join('')}</select></td>
+      <td><textarea placeholder="Control element description" oninput="updateControlStrategy('${cs.id}','description',this.value)">${esc(cs.description)}</textarea></td>
+      <td><textarea placeholder="Rationale" oninput="updateControlStrategy('${cs.id}','rationale',this.value)">${esc(cs.rationale)}</textarea></td>
+      <td class="row-actions"><button class="icon" onclick="deleteControlStrategy('${cs.id}')" title="Remove">✕</button></td>
+    </tr>`).join('');
+}
+
+// ---------- Supportive Validation Studies ----------
+function addSupportiveStudy(){
+  state.supportiveStudies.push({id:uid(), type:'Extractables & Leachables', ctdRef:SUPPORTIVE_STUDY_TYPES['Extractables & Leachables'], title:'', status:'Not Started', riskAssessment:'', scope:'', objective:'', designSummary:'', acceptanceCriteria:'', outcome:''});
+  save(); renderSupportiveStudies();
+}
+function updateSupportiveStudy(id, field, value){
+  const s = state.supportiveStudies.find(x=>x.id===id); if(!s) return;
+  s[field] = value;
+  if(field==='type'){ s.ctdRef = SUPPORTIVE_STUDY_TYPES[value] || ''; }
+  save(); renderSupportiveStudies();
+}
+function deleteSupportiveStudy(id){ state.supportiveStudies = state.supportiveStudies.filter(x=>x.id!==id); save(); renderSupportiveStudies(); }
+function renderSupportiveStudies(){
+  const body = document.getElementById('supportiveBody'); if(!body) return;
+  document.getElementById('supportiveEmpty').style.display = state.supportiveStudies.length ? 'none' : 'block';
+  body.innerHTML = state.supportiveStudies.map(s=>`
+    <tr>
+      <td><select onchange="updateSupportiveStudy('${s.id}','type',this.value)">${Object.keys(SUPPORTIVE_STUDY_TYPES).map(t=>`<option value="${t}" ${s.type===t?'selected':''}>${t}</option>`).join('')}</select></td>
+      <td><input type="text" value="${esc(s.ctdRef)}" placeholder="e.g. 3.2.A.2" oninput="updateSupportiveStudy('${s.id}','ctdRef',this.value)"></td>
+      <td><input type="text" value="${esc(s.title)}" placeholder="Study title" oninput="updateSupportiveStudy('${s.id}','title',this.value)"></td>
+      <td><select onchange="updateSupportiveStudy('${s.id}','status',this.value)">${SUPPORTIVE_STATUSES.map(st=>`<option value="${st}" ${s.status===st?'selected':''}>${st}</option>`).join('')}</select></td>
+      <td><textarea placeholder="Why this study is needed / risk mitigated" oninput="updateSupportiveStudy('${s.id}','riskAssessment',this.value)">${esc(s.riskAssessment)}</textarea></td>
+      <td><textarea placeholder="What's covered / boundaries" oninput="updateSupportiveStudy('${s.id}','scope',this.value)">${esc(s.scope)}</textarea></td>
+      <td><textarea placeholder="Objective" oninput="updateSupportiveStudy('${s.id}','objective',this.value)">${esc(s.objective)}</textarea></td>
+      <td><textarea placeholder="Design summary" oninput="updateSupportiveStudy('${s.id}','designSummary',this.value)">${esc(s.designSummary)}</textarea></td>
+      <td><textarea placeholder="Acceptance criteria" oninput="updateSupportiveStudy('${s.id}','acceptanceCriteria',this.value)">${esc(s.acceptanceCriteria)}</textarea></td>
+      <td><textarea placeholder="Outcome / result" oninput="updateSupportiveStudy('${s.id}','outcome',this.value)">${esc(s.outcome)}</textarea></td>
+      <td class="row-actions"><button class="icon" onclick="deleteSupportiveStudy('${s.id}')" title="Remove">✕</button></td>
+    </tr>`).join('');
+}
+
+// ---------- PPQ Acceptance Criteria ----------
+function updatePPQParam(paramId, field, value){ const p=state.params.find(x=>x.id===paramId); if(!p) return; p[field]=value; save(); renderPPQ(); }
+function updatePPQ(cqaId, field, value){ const c=state.cqas.find(x=>x.id===cqaId); if(!c) return; c[field]=value; save(); renderPPQ(); }
+function renderPpqFilterBars(){
+  document.getElementById('ppqParamFilterBar').innerHTML = `<div class="filter-bar"><label>Unit Operation <select onchange="ui.uo=this.value; renderPPQ();"><option value="">All</option>${state.unitOps.map(u=>`<option value="${u.id}" ${ui.uo===u.id?'selected':''}>${u.order}. ${esc(u.name)||'(unnamed)'}</option>`).join('')}</select></label></div>`;
+  document.getElementById('ppqCqaFilterBar').innerHTML = `<div class="filter-bar">
+    <label>Category <select onchange="ui.cqaCategory=this.value; renderPPQ();"><option value="">All</option>${CQA_CATEGORIES.map(cat=>`<option value="${cat}" ${ui.cqaCategory===cat?'selected':''}>${cat}</option>`).join('')}</select></label>
+    <label>Classification <select onchange="ui.cqaClass=this.value; renderPPQ();"><option value="">All</option><option ${ui.cqaClass==='CQA'?'selected':''}>CQA</option><option ${ui.cqaClass==='pCQA'?'selected':''}>pCQA</option></select></label>
+  </div>`;
+}
+function renderPPQ(){
+  renderPpqFilterBars();
+  const groups = applyUOFilter(groupByUO(highRiskParams()));
+  const container = document.getElementById('ppqParamBody');
+  document.getElementById('ppqParamEmpty').style.display = groups.length ? 'none' : 'block';
+  container.innerHTML = groups.map(g=>`
+    <div class="unitop">
+      <div class="unitop-head" style="background:#EEF0EC;"><span class="order">${g.unitOp.order}.</span><div style="flex:1;font-weight:600;">${esc(g.unitOp.name)||'(unnamed)'}</div></div>
+      <div class="unitop-body"><div class="table-scroll"><table>
+        <thead><tr><th style="width:15%">Parameter</th><th style="width:14%">NOR</th><th style="width:13%">Low Setpoint</th><th style="width:13%">Target Setpoint</th><th style="width:13%">High Setpoint</th><th>Acceptance Criterion</th></tr></thead>
+        <tbody>
+          ${g.params.map(p=>{
+            const norText = (p.norLow||p.norHigh) ? `${esc(p.norLow)||'—'}–${esc(p.norHigh)||'—'} ${esc(p.unit)}` : '—';
+            return `<tr>
+              <td>${paramLabel(p)}${paramUnitSuffix(p)}</td>
+              <td>${norText}</td>
+              <td><input type="text" value="${esc(p.ppqLowSetpoint)}" placeholder="Low Setpoint" oninput="updatePPQParam('${p.id}','ppqLowSetpoint',this.value)"></td>
+              <td><input type="text" value="${esc(p.ppqTargetSetpoint)}" placeholder="Target Setpoint" oninput="updatePPQParam('${p.id}','ppqTargetSetpoint',this.value)"></td>
+              <td><input type="text" value="${esc(p.ppqHighSetpoint)}" placeholder="High Setpoint" oninput="updatePPQParam('${p.id}','ppqHighSetpoint',this.value)"></td>
+              <td><input type="text" value="${esc(p.ppqAcceptanceCriterion)}" placeholder="e.g. Remain within NOR across all 3 batches" oninput="updatePPQParam('${p.id}','ppqAcceptanceCriterion',this.value)"></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div></div>
+    </div>`).join('');
+
+  const mapped = state.cqas.map(c=>({...c, ...computeCQA(c)})).filter(c=>c.classification==='CQA'||c.classification==='pCQA');
+  const cqaRows = mapped.filter(c=> (!ui.cqaCategory||c.category===ui.cqaCategory) && (!ui.cqaClass||c.classification===ui.cqaClass) );
+  const body = document.getElementById('ppqBody');
+  document.getElementById('ppqEmpty').style.display = cqaRows.length ? 'none' : 'block';
+  body.innerHTML = cqaRows.map(c=>`
+    <tr>
+      <td>${esc(c.name)||'(unnamed)'}</td>
+      <td><span class="tag ${c.classification}">${c.classification}</span></td>
+      <td><input type="text" value="${esc(c.acceptanceCriterion)}" placeholder="e.g. ≥95% full capsids" oninput="updatePPQ('${c.id}','acceptanceCriterion',this.value)"></td>
+      <td><input type="text" value="${esc(c.analyticalMethod)}" placeholder="e.g. AUC" oninput="updatePPQ('${c.id}','analyticalMethod',this.value)"></td>
+      <td><textarea placeholder="Justification" oninput="updatePPQ('${c.id}','ppqJustification',this.value)">${esc(c.ppqJustification)}</textarea></td>
+    </tr>`).join('');
+  renderFinalReport(mapped, groups.flatMap(g=>g.params));
+  renderPPQBatches();
+}
+
+// ---------- PPQ Batch Plan & Results ----------
+function calcSuggestedPPQBatches(){
+  const cqas = relevantCQAs();
+  const mapped = state.cqas.map(c=>({...c, ...computeCQA(c)}));
+  const hrParams = highRiskParams();
+  let count = 3;
+  const reasons = ['Baseline of 3 consecutive batches, consistent with standard process validation expectations, to demonstrate reproducibility.'];
+  if(hrParams.length >= 5){ count += 1; reasons.push(`+1 batch: ${hrParams.length} parameter(s) classified High risk (RPN ≥60) by FMEA 2A, indicating elevated process complexity.`); }
+  const safetyCritical = mapped.filter(c=>c.impactSafety===5);
+  if(safetyCritical.length > 0){ count += 1; reasons.push(`+1 batch: ${safetyCritical.length} CQA(s) carry a Safety Impact score of 5, warranting additional confirmatory data.`); }
+  const cppCount = state.params.filter(p=>getEffectiveClassification(p,cqas)==='CPP').length;
+  if(cppCount >= 8){ count += 1; reasons.push(`+1 batch: ${cppCount} parameters classified CPP, indicating a highly complex control strategy.`); }
+  count = Math.min(count, 6);
+  return {count, reasons};
+}
+function renderPPQBatchSuggestion(){
+  const el = document.getElementById('ppqBatchSuggestion');
+  const input = document.getElementById('ppqBatchCountInput');
+  if(!el) return;
+  const {count, reasons} = calcSuggestedPPQBatches();
+  el.innerHTML = `<div class="stat" style="display:inline-block; padding:12px 20px; margin-right:16px; vertical-align:top;"><div class="n" style="font-size:22px;">${count}</div><div class="l">Suggested batches</div></div>
+    <ul style="display:inline-block; vertical-align:top; padding-left:20px; font-size:12.5px; color:var(--ink-soft); margin:0; max-width:70%;">${reasons.map(r=>`<li>${esc(r)}</li>`).join('')}</ul>`;
+  if(input) input.value = state.ppqBatches.length || count;
+}
+function regeneratePPQBatches(){
+  const input = document.getElementById('ppqBatchCountInput');
+  let n = parseInt(input.value,10);
+  if(isNaN(n) || n<1) n = 3;
+  if(n>10) n = 10;
+  const current = state.ppqBatches.length;
+  if(n > current){
+    for(let i=current;i<n;i++){ state.ppqBatches.push({id:uid(), label:`Batch ${i+1}`, batchRef:'', date:''}); }
+  } else if(n < current){
+    const removed = state.ppqBatches.splice(n);
+    removed.forEach(b=>{ Object.keys(state.ppqResults).forEach(k=>{ if(k.startsWith(b.id+'|')) delete state.ppqResults[k]; }); });
+  }
+  save(); renderPPQBatches();
+}
+function updatePPQBatchMeta(id, field, value){ const b=state.ppqBatches.find(x=>x.id===id); if(b){ b[field]=value; save(); } }
+function parseNum(s){ if(typeof s !== 'string') return NaN; const t=s.trim(); if(!/^-?\d+(\.\d+)?$/.test(t)) return NaN; return parseFloat(t); }
+function resultKey(batchId, itemKey){ return batchId+'|'+itemKey; }
+function updatePPQResult(batchId, itemKey, field, value){
+  const key = resultKey(batchId,itemKey);
+  if(!state.ppqResults[key]) state.ppqResults[key] = {value:'', passFail:''};
+  state.ppqResults[key][field] = value;
+  if(field==='value' && itemKey.startsWith('param-')){
+    const p = state.params.find(x=>x.id===itemKey.slice(6));
+    if(p){
+      const lo=parseNum(p.norLow), hi=parseNum(p.norHigh), val=parseNum(value);
+      if(!isNaN(lo) && !isNaN(hi) && !isNaN(val)){ state.ppqResults[key].passFail = (val>=lo && val<=hi) ? 'Pass' : 'Fail'; }
+    }
+  }
+  save(); renderPPQBatches();
+}
+function renderPPQBatchMeta(){
+  const el = document.getElementById('ppqBatchMeta'); if(!el) return;
+  if(!state.ppqBatches.length){ el.innerHTML=''; return; }
+  el.innerHTML = `<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">${state.ppqBatches.map(b=>`
+    <div style="border:1px solid var(--line); border-radius:4px; padding:8px 10px; min-width:170px;">
+      <input type="text" value="${esc(b.label)}" style="font-weight:600; margin-bottom:4px;" oninput="updatePPQBatchMeta('${b.id}','label',this.value)">
+      <input type="text" value="${esc(b.batchRef)}" placeholder="Batch record ref." style="font-size:12px; margin-bottom:4px;" oninput="updatePPQBatchMeta('${b.id}','batchRef',this.value)">
+      <input type="text" value="${esc(b.date)}" placeholder="Manufacture date" style="font-size:12px;" oninput="updatePPQBatchMeta('${b.id}','date',this.value)">
+    </div>`).join('')}</div>`;
+}
+function renderPPQBatchResults(){
+  const el = document.getElementById('ppqBatchResults');
+  const emptyEl = document.getElementById('ppqBatchEmpty');
+  if(!el) return;
+  if(!state.ppqBatches.length){ el.innerHTML=''; if(emptyEl) emptyEl.style.display='block'; return; }
+  if(emptyEl) emptyEl.style.display='none';
+  const cqas = relevantCQAs();
+  const hrParams = highRiskParams();
+  const colCount = 2 + state.ppqBatches.length*2;
+  const passFailSelect = (batchId, itemKey, r) => `<select onchange="updatePPQResult('${batchId}','${itemKey}','passFail',this.value)">
+      <option value="" ${!r.passFail?'selected':''}>—</option>
+      <option value="Pass" ${r.passFail==='Pass'?'selected':''}>Pass</option>
+      <option value="Fail" ${r.passFail==='Fail'?'selected':''}>Fail</option>
+    </select>`;
+  const cqaRows = cqas.map(c=>{
+    const cells = state.ppqBatches.map(b=>{
+      const itemKey = 'cqa-'+c.id;
+      const r = state.ppqResults[resultKey(b.id,itemKey)] || {value:'',passFail:''};
+      return `<td><input type="text" value="${esc(r.value)}" placeholder="Result" oninput="updatePPQResult('${b.id}','${itemKey}','value',this.value)"></td><td>${passFailSelect(b.id,itemKey,r)}</td>`;
+    }).join('');
+    return `<tr><td>${esc(c.name)||'(unnamed)'}</td><td>${esc(c.acceptanceCriterion)||'—'}</td>${cells}</tr>`;
+  }).join('');
+  const paramRows = hrParams.map(p=>{
+    const cells = state.ppqBatches.map(b=>{
+      const itemKey = 'param-'+p.id;
+      const r = state.ppqResults[resultKey(b.id,itemKey)] || {value:'',passFail:''};
+      return `<td><input type="text" value="${esc(r.value)}" placeholder="Result" oninput="updatePPQResult('${b.id}','${itemKey}','value',this.value)"></td><td>${passFailSelect(b.id,itemKey,r)}</td>`;
+    }).join('');
+    const norText = (p.norLow||p.norHigh) ? `${esc(p.norLow)||'—'}–${esc(p.norHigh)||'—'} ${esc(p.unit)}` : '—';
+    return `<tr><td>${esc(p.name)||'(unnamed)'}</td><td>${norText}</td>${cells}</tr>`;
+  }).join('');
+  el.innerHTML = `<table>
+    <thead>
+      <tr><th rowspan="2">Attribute / Parameter</th><th rowspan="2">Acceptance Criterion / NOR</th>${state.ppqBatches.map(b=>`<th colspan="2" style="text-align:center;">${esc(b.label)}</th>`).join('')}</tr>
+      <tr>${state.ppqBatches.map(()=>`<th style="width:80px">Result</th><th style="width:70px">Pass/Fail</th>`).join('')}</tr>
+    </thead>
+    <tbody>
+      <tr class="uo-group-row"><td colspan="${colCount}">CQA Results</td></tr>
+      ${cqaRows || `<tr><td colspan="${colCount}" style="color:var(--ink-soft);">No CQA/pCQA attributes yet.</td></tr>`}
+      <tr class="uo-group-row"><td colspan="${colCount}">Process Parameter Results (characterized parameters)</td></tr>
+      ${paramRows || `<tr><td colspan="${colCount}" style="color:var(--ink-soft);">No characterized parameters yet.</td></tr>`}
+    </tbody>
+  </table>`;
+}
+function ppqBatchStats(b){
+  const cqas = relevantCQAs();
+  const hrParams = highRiskParams();
+  const items = [...cqas.map(c=>'cqa-'+c.id), ...hrParams.map(p=>'param-'+p.id)];
+  let pass=0, fail=0, pending=0;
+  items.forEach(itemKey=>{
+    const r = state.ppqResults[resultKey(b.id,itemKey)];
+    if(!r || !r.passFail) pending++;
+    else if(r.passFail==='Pass') pass++;
+    else fail++;
+  });
+  const disposition = fail>0 ? 'FAIL' : (pending>0 ? 'Pending' : 'PASS');
+  return {pass, fail, pending, disposition};
+}
+function renderPPQBatchDisposition(){
+  const el = document.getElementById('ppqBatchDisposition'); if(!el) return;
+  if(!state.ppqBatches.length){ el.innerHTML = '<div class="empty">No PPQ batches yet.</div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Batch</th><th>Ref.</th><th>Date</th><th style="width:70px">Pass</th><th style="width:70px">Fail</th><th style="width:70px">Pending</th><th style="width:110px">Disposition</th></tr></thead><tbody>
+    ${state.ppqBatches.map(b=>{
+      const {pass,fail,pending,disposition} = ppqBatchStats(b);
+      const dispTag = disposition==='FAIL' ? 'CPP' : (disposition==='Pending' ? 'KPP' : 'Non-CPP');
+      return `<tr><td>${esc(b.label)}</td><td>${esc(b.batchRef)||'—'}</td><td>${esc(b.date)||'—'}</td><td class="num">${pass}</td><td class="num">${fail}</td><td class="num">${pending}</td><td><span class="tag ${dispTag}">${disposition}</span></td></tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+function renderPPQBatches(){
+  renderPPQBatchSuggestion();
+  renderPPQBatchMeta();
+  renderPPQBatchResults();
+  renderPPQBatchDisposition();
+}
+function renderFinalReport(cqas, ppqParams){
+  const el = document.getElementById('finalReport');
+  el.innerHTML = `
+    <div style="margin-bottom:16px;"><h2 style="font-size:13.5px;">CQA Acceptance Criteria</h2>
+      <table><thead><tr><th>CQA</th><th>Class</th><th>Acceptance Criterion</th><th>Method</th></tr></thead><tbody>
+      ${cqas.map(c=>`<tr><td>${esc(c.name)||'(unnamed)'}</td><td><span class="tag ${c.classification}">${c.classification}</span></td><td>${esc(c.acceptanceCriterion)||'—'}</td><td>${esc(c.analyticalMethod)||'—'}</td></tr>`).join('')}
+      </tbody></table>
+    </div>
+    <div><h2 style="font-size:13.5px;">Process Parameter Acceptance Criteria (Low / Target / High)</h2>
+      <table><thead><tr><th>Parameter</th><th>Unit Operation</th><th>NOR</th><th>Low</th><th>Target</th><th>High</th><th>Acceptance Criterion</th></tr></thead><tbody>
+      ${ppqParams.map(p=>{
+        const u = state.unitOps.find(x=>x.id===p.unitOpId);
+        return `<tr><td>${paramLabel(p)}</td><td>${esc(u?u.name:'')||'—'}</td><td>${esc(p.norLow)||'—'}–${esc(p.norHigh)||'—'} ${esc(p.unit)}</td><td>${esc(p.ppqLowSetpoint)||'—'}</td><td>${esc(p.ppqTargetSetpoint)||'—'}</td><td>${esc(p.ppqHighSetpoint)||'—'}</td><td>${esc(p.ppqAcceptanceCriterion)||'—'}</td></tr>`;
+      }).join('')}
+      </tbody></table>
+    </div>`;
+}
+
+// ---------- Summary ----------
+function renderSummary(){
+  const groups = { CQA:[], pCQA:[], 'Non-CQA':[] };
+  state.cqas.forEach(c=>{ const r = computeCQA(c); groups[r.classification].push({...c, ...r}); });
+  document.getElementById('countCQA').textContent = groups.CQA.length;
+  document.getElementById('countPCQA').textContent = groups.pCQA.length;
+  document.getElementById('countNonCQA').textContent = groups['Non-CQA'].length;
+  const section = (label, items) => `<div style="margin-bottom:18px;"><h2 style="font-size:13.5px;margin-bottom:8px;">${label} (${items.length})</h2>
+    ${items.length ? `<table><thead><tr><th>Attribute</th><th>Category</th><th style="width:130px">Safety / Efficacy Score</th><th>Rationale</th></tr></thead>
+    <tbody>${items.map(i=>`<tr><td>${esc(i.name)||'(unnamed)'}</td><td>${esc(i.category)||'—'}</td><td class="num">${i.safetyScore} / ${i.efficacyScore}</td><td>${esc(i.rationale)||'—'}</td></tr>`).join('')}</tbody></table>` : `<div class="empty">None identified</div>`}</div>`;
+  document.getElementById('summaryTables').innerHTML = section('Critical Quality Attributes (CQA)', groups.CQA) + section('Potential CQA (pCQA)', groups.pCQA) + section('Non-CQA', groups['Non-CQA']);
+}
+
+// ---------- Module 3 Draft ----------
+function m3QtppTable(){
+  return `<table><thead><tr><th>Attribute</th><th>Target</th><th>Justification</th></tr></thead><tbody>
+    ${state.qtpps.map(q=>`<tr><td>${esc(q.name)}</td><td>${esc(q.target)}</td><td>${esc(q.justification)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function m3CqaTable(list){
+  if(!list.length) return '<p>No CQA/pCQA attributes have been identified yet.</p>';
+  return `<table><thead><tr><th>Attribute</th><th>Category</th><th>Classification</th><th>Rationale</th></tr></thead><tbody>
+    ${list.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.category)}</td><td>${c.classification}</td><td>${esc(c.rationale)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function m3ProcessNarrative(){
+  if(!state.unitOps.length) return '<p>No unit operations have been defined yet.</p>';
+  return state.unitOps.map(u=>{
+    const ps = state.params.filter(p=>p.unitOpId===u.id);
+    const paramText = ps.map(p=>{
+      const range = (p.lowSetpoint||p.highSetpoint) ? `, operating range ${esc(p.lowSetpoint)||'—'}–${esc(p.highSetpoint)||'—'} ${esc(p.unit)}` : '';
+      return `${esc(p.name)||'(unnamed)'}${p.unit?` (${esc(p.unit)})`:''}${range}`;
+    }).join('; ') || 'none specified';
+    return `<p><b>Step ${u.order}: ${esc(u.name)||'(unnamed)'}.</b> ${esc(u.description) || 'This step is performed in accordance with approved batch production instructions.'} The following process parameters are monitored during this step: ${paramText}.</p>`;
+  }).join('');
+}
+function m3CppTable(list){
+  if(!list.length) return '<p>No CPP/KPP parameters have been identified yet.</p>';
+  return `<table><thead><tr><th>Parameter</th><th>Unit Operation</th><th>Classification</th><th>Rationale</th></tr></thead><tbody>
+    ${list.map(p=>{ const u=state.unitOps.find(x=>x.id===p.unitOpId); return `<tr><td>${esc(p.name)}</td><td>${esc(u?u.name:'')}</td><td>${p.cls}</td><td>${esc(p.classificationRationale)}</td></tr>`; }).join('')}
+  </tbody></table>`;
+}
+function m3Fmea2bTable(list){
+  if(!list.length) return '<p>No parameters have completed characterization (FMEA 2B) at this time.</p>';
+  return `<table><thead><tr><th>Parameter</th><th>NOR</th><th>Action Limit</th><th>If Low Limit Reached</th><th>If High Limit Reached</th></tr></thead><tbody>
+    ${list.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.norLow)||'—'}–${esc(p.norHigh)||'—'} ${esc(p.unit)}</td><td>${esc(p.actionLow)||'—'}–${esc(p.actionHigh)||'—'} ${esc(p.unit)}</td><td>${esc(p.actionLowResponse)||'—'}</td><td>${esc(p.actionHighResponse)||'—'}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function m3ControlStrategyList(){
+  if(!state.controlStrategy.length) return '<p>No control strategy elements have been documented yet.</p>';
+  return `<ul>${state.controlStrategy.map(cs=>`<li><b>${esc(cs.category)}:</b> ${esc(cs.description)}${cs.rationale?` (${esc(cs.rationale)})`:''}</li>`).join('')}</ul>`;
+}
+function m3PpqParamTable(list){
+  if(!list.length) return '<p>No parameters are scheduled for a PPQ challenge at this time.</p>';
+  return `<table><thead><tr><th>Parameter</th><th>Low Setpoint</th><th>Target Setpoint</th><th>High Setpoint</th><th>Acceptance Criterion</th></tr></thead><tbody>
+    ${list.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.ppqLowSetpoint)||'—'}</td><td>${esc(p.ppqTargetSetpoint)||'—'}</td><td>${esc(p.ppqHighSetpoint)||'—'}</td><td>${esc(p.ppqAcceptanceCriterion)||'—'}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function m3PpqBatchSummary(){
+  if(!state.ppqBatches.length) return '';
+  const rows = state.ppqBatches.map(b=>{
+    const {disposition} = ppqBatchStats(b);
+    return `<tr><td>${esc(b.label)}</td><td>${esc(b.batchRef)||'—'}</td><td>${esc(b.date)||'—'}</td><td>${disposition}</td></tr>`;
+  }).join('');
+  return `<p>${state.ppqBatches.length} PPQ batch(es) were executed and evaluated against the acceptance criteria described above, with disposition summarized in Table 6.</p>
+    <p class="table-caption">Table 6. PPQ Batch Disposition</p>
+    <table><thead><tr><th>Batch</th><th>Reference</th><th>Date</th><th>Disposition</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function m3SupportiveTable(){
+  if(!state.supportiveStudies.length) return '<p>No supportive validation studies have been logged yet.</p>';
+  return `<table><thead><tr><th>Study</th><th>CTD Ref.</th><th>Status</th><th>Risk Assessment</th><th>Scope</th><th>Acceptance Criteria</th><th>Outcome</th></tr></thead><tbody>
+    ${state.supportiveStudies.map(s=>`<tr><td>${esc(s.title)||esc(s.type)}</td><td>${esc(s.ctdRef)||'—'}</td><td>${esc(s.status)}</td><td>${esc(s.riskAssessment)||'—'}</td><td>${esc(s.scope)||'—'}</td><td>${esc(s.acceptanceCriteria)||'—'}</td><td>${esc(s.outcome)||'—'}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function m3CqaAcceptanceTable(list){
+  if(!list.length) return '<p>No CQA acceptance criteria have been defined yet.</p>';
+  return `<table><thead><tr><th>CQA</th><th>Acceptance Criterion</th><th>Analytical Method</th><th>Justification</th></tr></thead><tbody>
+    ${list.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.acceptanceCriterion)||'—'}</td><td>${esc(c.analyticalMethod)||'—'}</td><td>${esc(c.ppqJustification)||'—'}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function m3DataSummary(){
+  const cqas = relevantCQAs();
+  const mapped = state.cqas.map(c=>({...c, ...computeCQA(c)}));
+  const cqaOnly = mapped.filter(c=>c.classification==='CQA');
+  const pcqaOnly = mapped.filter(c=>c.classification==='pCQA');
+  const cppKpp = state.params.map(p=>({...p, cls:getEffectiveClassification(p,cqas)})).filter(p=>['CPP','KPP'].includes(p.cls));
+  const hrParams = highRiskParams();
+  return { cqas, cqaOnly, pcqaOnly, cppKpp, hrParams };
+}
+function buildModule3Draft(){
+  const {cqas, cqaOnly, pcqaOnly, cppKpp, hrParams} = m3DataSummary();
+  const today = new Date().toISOString().slice(0,10);
+  let html = '';
+  html += `<div class="m3-header"><h2>MODULE 3.2.S — QUALITY: DRUG SUBSTANCE</h2><div class="meta">[Product Name] — Manufacturing Process, Controls, and Specification &nbsp;|&nbsp; Prepared by: Kushal Paudel &nbsp;|&nbsp; Draft Date: ${today} &nbsp;|&nbsp; Status: DRAFT — NOT FOR SUBMISSION</div></div>`;
+  html += `<p>The following sections summarize the risk-based development of the manufacturing process, control strategy, and product specifications, applied in accordance with the principles of ICH Q8(R2), Q9, and Q11.</p>`;
+
+  html += `<h3>3.2.S.2.6 Manufacturing Process Development</h3>`;
+  html += `<p>Development of the manufacturing process and its associated control strategy was conducted within a Quality by Design (QbD) framework. The Quality Target Product Profile (QTPP), summarized in Table 1, was established to define the quality, safety, and efficacy attributes required of the product, and served as the basis for identification of Critical Quality Attributes (CQAs).</p>`;
+  html += `<p class="table-caption">Table 1. Quality Target Product Profile (QTPP)</p>` + m3QtppTable();
+  html += `<p>Candidate quality attributes were evaluated by a structured risk assessment in which Impact and Uncertainty were scored independently for patient safety and therapeutic efficacy on a 1–5 ordinal scale. Impact reflects the anticipated consequence should the attribute fail to meet its target; Uncertainty reflects the extent of prior knowledge or platform experience supporting that assessment. An Impact score of 5 on either axis was sufficient, independent of Uncertainty, to designate an attribute a CQA, consistent with the precautionary treatment warranted by attributes of potentially severe consequence. A combined risk score (Impact × Uncertainty) of 15 or greater likewise resulted in CQA designation; scores of 6–14 were classified as potential CQA (pCQA), warranting continued monitoring as process knowledge accrues; scores of 5 or below were classified Non-CQA. Application of this framework identified ${cqaOnly.length} CQA(s) and ${pcqaOnly.length} pCQA(s), summarized in Table 2 together with the supporting rationale for each classification.</p>`;
+  html += `<p class="table-caption">Table 2. Critical Quality Attributes and Potential Critical Quality Attributes</p>` + m3CqaTable(cqaOnly.concat(pcqaOnly));
+  html += `<p>The relationship between manufacturing process parameters and the CQAs identified above was subsequently established through a parameter-to-attribute linkage assessment, forming the basis for process parameter classification and the characterization and validation program described in Sections 3.2.S.2.4 and 3.2.S.2.5.</p>`;
+
+  html += `<h3>3.2.S.2.2 Description of Manufacturing Process and Process Controls</h3>`;
+  html += `<p>The manufacturing process comprises the unit operations summarized below, executed in the sequence indicated. Process parameters governing each unit operation, together with their established operating ranges, are provided in support of the process description; risk-based classification of these parameters is addressed in Section 3.2.S.2.4.</p>`;
+  html += m3ProcessNarrative();
+
+  html += `<h3>3.2.S.2.4 Control of Critical Steps and Intermediates</h3>`;
+  html += `<p>Process parameters were evaluated for their potential impact on the CQAs identified in Section 3.2.S.2.6 through the linkage assessment referenced above. Parameters exhibiting a demonstrated linkage to one or more CQAs were designated Critical Process Parameters (CPP) and are subject to tightened operational control; parameters important to process consistency and yield, but without a direct demonstrated linkage to a CQA, were designated Key Process Parameters (KPP). ${cppKpp.length} parameter(s) were classified as CPP or KPP across the manufacturing process, summarized in Table 3.</p>`;
+  html += `<p class="table-caption">Table 3. Critical and Key Process Parameters</p>` + m3CppTable(cppKpp);
+  html += `<p>Parameters classified as CPP or KPP were further evaluated by Failure Mode and Effects Analysis (FMEA), incorporating Severity, Occurrence, and Detection scores to derive a Risk Priority Number (RPN). Parameters with an RPN of 60 or greater were designated high risk and subjected to formal process characterization (Section 3.2.S.2.5) to establish the Proven Acceptable Range (PAR), Normal Operating Range (NOR), and associated in-process Action Limits, summarized in Table 4. Where an Action Limit is approached or exceeded during routine manufacture, the corrective actions summarized below are initiated to maintain the process within a validated state of control.</p>`;
+  html += `<p class="table-caption">Table 4. Proven Acceptable Range, Normal Operating Range, and Action Limits</p>` + m3Fmea2bTable(hrParams);
+  html += `<p>The control strategy extends beyond parameter-level control to encompass facility design, utility systems, personnel qualification, and equipment controls, summarized below. These elements collectively support consistent process performance and product quality.</p>`;
+  html += m3ControlStrategyList();
+
+  html += `<h3>3.2.S.2.5 Process Validation and/or Evaluation</h3>`;
+  html += `<p>Process performance was demonstrated through execution of Process Performance Qualification (PPQ) batches manufactured under conditions representative of routine commercial production. PPQ batches were designed to challenge Critical Process Parameters at Low, Target, and High setpoints within the established Normal Operating Range, providing assurance that the process performs acceptably across its validated operating range, as summarized in Table 5. Acceptance of process performance was based on all PPQ batches meeting the predefined acceptance criteria for the process parameters and quality attributes evaluated.</p>`;
+  html += `<p class="table-caption">Table 5. PPQ Batch Challenge Design</p>` + m3PpqParamTable(hrParams);
+  html += m3PpqBatchSummary();
+
+  html += `<h3>Supportive Validation Studies</h3>`;
+  html += `<p>The manufacturing process and control strategy are further supported by the validation studies summarized in Table 7, which address process- and product-related risks not otherwise captured through in-process parameter control. Typical CTD placement is indicated for each study; final placement should be confirmed against the dossier structure and applicable regional guidance.</p>`;
+  html += `<p class="table-caption">Table 7. Supportive Validation Studies</p>` + m3SupportiveTable();
+
+  html += `<h3>3.2.S.4.1 / 3.2.S.4.5 Specification and Justification of Specification</h3>`;
+  html += `<p>Proposed acceptance criteria for the CQAs identified in Section 3.2.S.2.6 are summarized in Table 8, together with the analytical method used for determination and the basis for each acceptance criterion. Acceptance criteria were established with reference to demonstrated manufacturing process capability, characterization and PPQ batch data, and, where applicable, relevant compendial requirements, such that product meeting the proposed specification is representative of material demonstrated to be safe and efficacious.</p>`;
+  html += `<p class="table-caption">Table 8. Specification and Justification</p>` + m3CqaAcceptanceTable(cqas);
+
+  html += `<p style="margin-top:22px;font-style:italic;color:var(--ink-soft);">This document has been assembled from the risk assessment record maintained in this tool and constitutes a starting point for Module 3 authoring. It should be reviewed against source data, completed with information outside this tool's scope (e.g., analytical method validation, stability, and structural characterization data), and finalized in accordance with applicable regional guidance prior to inclusion in a regulatory submission.</p>`;
+  return html;
+}
+function renderModule3Draft(){
+  const el = document.getElementById('module3DraftContent');
+  if(el) el.innerHTML = buildModule3Draft();
+}
+function copyModule3Draft(){
+  const el = document.getElementById('module3DraftContent');
+  if(!el) return;
+  navigator.clipboard.writeText(el.innerText).then(()=>{
+    const btn = document.getElementById('copyDraftBtn');
+    if(btn){ const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(()=>{ btn.textContent = orig; }, 1500); }
+  }).catch(()=>alert('Could not copy automatically — select the text and copy manually.'));
+}
+function downloadModule3Word(){
+  const el = document.getElementById('module3DraftContent');
+  if(!el) return;
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset='utf-8'><title>Module 3 Draft</title></head>
+  <body>${el.innerHTML}</body></html>`;
+  const blob = new Blob(['\ufeff', html], {type:'application/msword'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='Module3_Draft.doc'; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+async function polishWithAI(){
+  const btn = document.getElementById('polishBtn');
+  const statusEl = document.getElementById('polishStatus');
+  if(btn){ btn.disabled = true; btn.textContent = 'Polishing…'; }
+  if(statusEl) statusEl.textContent = '';
+  try{
+    const {cqas, cqaOnly, pcqaOnly, cppKpp, hrParams} = m3DataSummary();
+    const summary = {
+      qtpp: state.qtpps.map(q=>({name:q.name, target:q.target, justification:q.justification})),
+      cqas: cqaOnly.concat(pcqaOnly).map(c=>({name:c.name, category:c.category, classification:c.classification, rationale:c.rationale})),
+      processSteps: state.unitOps.map(u=>({order:u.order, name:u.name, description:u.description, parameters:state.params.filter(p=>p.unitOpId===u.id).map(p=>({name:p.name, unit:p.unit, low:p.lowSetpoint, high:p.highSetpoint}))})),
+      cppKpp: cppKpp.map(p=>({name:p.name, classification:p.cls, rationale:p.classificationRationale})),
+      characterizedParams: hrParams.map(p=>({name:p.name, nor:[p.norLow,p.norHigh], actionLimit:[p.actionLow,p.actionHigh], ifLow:p.actionLowResponse, ifHigh:p.actionHighResponse})),
+      controlStrategy: state.controlStrategy.map(cs=>({category:cs.category, description:cs.description, rationale:cs.rationale})),
+      ppqParams: hrParams.map(p=>({name:p.name, low:p.ppqLowSetpoint, target:p.ppqTargetSetpoint, high:p.ppqHighSetpoint, criterion:p.ppqAcceptanceCriterion})),
+      ppqBatches: state.ppqBatches.map(b=>({label:b.label, disposition: ppqBatchStats(b).disposition})),
+      cqaAcceptance: cqas.map(c=>({name:c.name, criterion:c.acceptanceCriterion, method:c.analyticalMethod, justification:c.ppqJustification})),
+      supportiveStudies: state.supportiveStudies.map(s=>({type:s.type, ctdRef:s.ctdRef, title:s.title, status:s.status, riskAssessment:s.riskAssessment, scope:s.scope, objective:s.objective, designSummary:s.designSummary, acceptanceCriteria:s.acceptanceCriteria, outcome:s.outcome}))
+    };
+    const prompt = `You are a CMC regulatory affairs professional with over 20 years of experience authoring Module 3 Quality sections for BLA and MAA submissions, having personally led CMC authoring on at least 20 approved biologic and gene therapy products. You write the way an experienced submission author writes: precise, confident, economical — never hedging, never using AI-typical filler phrases ("it's important to note", "in conclusion", "overall"), and never restating the obvious.
+
+Write the NARRATIVE PROSE ONLY (no tables, no HTML, no headers) for six CTD Module 3.2.S subsections, based strictly on the JSON data provided below. Do not invent, estimate, or embellish any data point absent from the JSON — where data is sparse, write appropriately brief, honest prose rather than padding it with generic statements.
+
+Conventions to follow: standard CMC/regulatory terminology; cross-reference other sections by number (e.g., "as described in Section 3.2.S.2.6"); passive voice where conventional in CMC writing; reference ICH Q8(R2), Q9, and Q11 principles where genuinely relevant, not by rote; vary sentence structure and length the way an experienced author would rather than repeating the same sentence pattern across sections. Write connective narrative that will be immediately followed by a data table — provide framing, rationale, and interpretive narrative; do not restate every data point (the table covers that).
+
+Return ONLY valid JSON (no markdown fences, no commentary) with exactly these keys, each a string of 1-3 short paragraphs of plain prose (use \\n\\n between paragraphs, no HTML tags):
+{"s226":"...","s222":"...","s224":"...","s225":"...","supportive":"...","s245":"..."}
+
+DATA:
+${JSON.stringify(summary)}`;
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 2200, messages: [{ role: "user", content: prompt }] })
+    });
+    const data = await response.json();
+    const textBlock = (data.content||[]).find(b=>b.type==='text');
+    if(!textBlock) throw new Error('No text returned from AI');
+    let jsonText = textBlock.text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'');
+    const polished = JSON.parse(jsonText);
+    const asParas = t => (t||'').split('\n\n').filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join('');
+    const today = new Date().toISOString().slice(0,10);
+
+    let html = '';
+    html += `<div class="m3-header"><h2>MODULE 3.2.S — QUALITY: DRUG SUBSTANCE</h2><div class="meta">[Product Name] — Manufacturing Process, Controls, and Specification &nbsp;|&nbsp; Prepared by: Kushal Paudel &nbsp;|&nbsp; Draft Date: ${today} &nbsp;|&nbsp; Status: DRAFT — NOT FOR SUBMISSION</div></div>`;
+    html += `<h3>3.2.S.2.6 Manufacturing Process Development</h3>` + asParas(polished.s226) + `<p class="table-caption">Table 1. Quality Target Product Profile (QTPP)</p>` + m3QtppTable() + `<p class="table-caption">Table 2. Critical Quality Attributes and Potential Critical Quality Attributes</p>` + m3CqaTable(cqaOnly.concat(pcqaOnly));
+    html += `<h3>3.2.S.2.2 Description of Manufacturing Process and Process Controls</h3>` + asParas(polished.s222) + m3ProcessNarrative();
+    html += `<h3>3.2.S.2.4 Control of Critical Steps and Intermediates</h3>` + asParas(polished.s224) + `<p class="table-caption">Table 3. Critical and Key Process Parameters</p>` + m3CppTable(cppKpp) + `<p class="table-caption">Table 4. Proven Acceptable Range, Normal Operating Range, and Action Limits</p>` + m3Fmea2bTable(hrParams) + m3ControlStrategyList();
+    html += `<h3>3.2.S.2.5 Process Validation and/or Evaluation</h3>` + asParas(polished.s225) + `<p class="table-caption">Table 5. PPQ Batch Challenge Design</p>` + m3PpqParamTable(hrParams) + m3PpqBatchSummary();
+    html += `<h3>Supportive Validation Studies</h3>` + asParas(polished.supportive) + `<p class="table-caption">Table 7. Supportive Validation Studies</p>` + m3SupportiveTable();
+    html += `<h3>3.2.S.4.1 / 3.2.S.4.5 Specification and Justification of Specification</h3>` + asParas(polished.s245) + `<p class="table-caption">Table 8. Specification and Justification</p>` + m3CqaAcceptanceTable(cqas);
+    html += `<p style="margin-top:22px;font-style:italic;color:var(--ink-soft);">Narrative polished by AI from the structured data in this tool; all tables and figures are generated directly from that data, not AI-written. Requires expert review before use in a regulatory submission.</p>`;
+
+    document.getElementById('module3DraftContent').innerHTML = html;
+    if(statusEl) statusEl.textContent = 'Polished with AI';
+  }catch(e){
+    console.error(e);
+    if(statusEl) statusEl.textContent = '';
+    alert('Could not complete AI polishing (this feature requires being used inside Claude.ai with network access). Your draft is unaffected — use Refresh Draft for the standard version.');
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = 'Polish with AI (Expert CMC Voice)'; }
+  }
+}
+
+function renderEverything(){
+  renderQTPP(); renderCQA(); renderProcess(); renderLinkage(); renderClassification();
+  renderFmea2a(); renderPCPlan(); renderFmea2b(); renderSupportiveStudies(); renderPPQ(); renderModule3Draft(); renderSummary();
+}
+
+// ---------- Excel export (styled to match the app) ----------
+const XL_FILL = { header:'FF1B2A45', groupBand:'FFEEF0EC', red:'FFF6E2DF', amber:'FFF5E9D0', green:'FFE3F0E7' };
+const XL_FONT = { red:'FFA8362B', amber:'FFB8860B', green:'FF2F6E4C' };
+function xlTierKey(value){
+  if(['CQA','CPP','High'].includes(value)) return 'red';
+  if(['pCQA','KPP','Medium'].includes(value)) return 'amber';
+  if(['Non-CQA','Non-CPP','Low'].includes(value)) return 'green';
+  return null;
+}
+function xlColorTag(cell, value){
+  const key = xlTierKey(value); if(!key) return;
+  cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:XL_FILL[key]}};
+  cell.font = {bold:true, color:{argb:XL_FONT[key]}};
+}
+function xlStyleHeader(ws){
+  const row = ws.getRow(1);
+  row.eachCell(cell=>{ cell.font={bold:true, color:{argb:'FFFFFFFF'}}; cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:XL_FILL.header}}; cell.alignment={vertical:'middle', wrapText:true}; });
+  row.height = 22;
+}
+function xlAddFlatSheet(wb, name, columns, dataRows, tagKey){
+  const ws = wb.addWorksheet(name.slice(0,31));
+  ws.columns = columns; xlStyleHeader(ws);
+  dataRows.forEach(r=>{
+    const row = ws.addRow(r);
+    row.eachCell(cell=>{ cell.alignment = {wrapText:true, vertical:'top'}; });
+    if(tagKey && r[tagKey]) xlColorTag(row.getCell(tagKey), r[tagKey]);
+  });
+  ws.views=[{state:'frozen', ySplit:1}];
+  return ws;
+}
+function xlAddGroupedSheet(wb, name, columns, groups, tagKey){
+  const ws = wb.addWorksheet(name.slice(0,31));
+  ws.columns = columns; xlStyleHeader(ws);
+  groups.forEach(g=>{
+    const bandRow = ws.addRow([g.label]);
+    ws.mergeCells(bandRow.number,1,bandRow.number,columns.length);
+    bandRow.getCell(1).font = {bold:true};
+    bandRow.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:XL_FILL.groupBand}};
+    g.rows.forEach(r=>{
+      const row = ws.addRow(r);
+      row.eachCell(cell=>{ cell.alignment={wrapText:true, vertical:'top'}; });
+      if(tagKey && r[tagKey]) xlColorTag(row.getCell(tagKey), r[tagKey]);
+    });
+  });
+  ws.views=[{state:'frozen', ySplit:1}];
+  return ws;
+}
+function xlAddMatrixSheet(wb, name, cqas, groups){
+  const ws = wb.addWorksheet(name.slice(0,31));
+  const headers = [{header:'Unit Operation / Parameter', key:'param', width:32}, ...cqas.map((c,i)=>({header:c.name||'(unnamed)', key:'c'+i, width:14}))];
+  ws.columns = headers; xlStyleHeader(ws);
+  groups.forEach(g=>{
+    const bandRow = ws.addRow({param: g.label});
+    ws.mergeCells(bandRow.number,1,bandRow.number,headers.length);
+    bandRow.getCell(1).font = {bold:true};
+    bandRow.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:XL_FILL.groupBand}};
+    g.params.forEach(p=>{
+      const rowObj = {param: (p.name||'(unnamed)') + (p.unit?' ('+p.unit+')':'')};
+      cqas.forEach((c,i)=>{ rowObj['c'+i] = state.linkages[linkageKey(p.id,c.id)]||0; });
+      const row = ws.addRow(rowObj);
+      cqas.forEach((c,i)=>{
+        const cell = row.getCell('c'+i);
+        const val = cell.value;
+        const key = val>=4?'red': val>=3?'amber': val>=1?'green':null;
+        if(key){ cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:XL_FILL[key]}}; cell.font={bold:true,color:{argb:XL_FONT[key]}}; }
+        cell.alignment={horizontal:'center'};
+      });
+    });
+  });
+  ws.views=[{state:'frozen', xSplit:1, ySplit:1}];
+  return ws;
+}
+async function exportExcel(){
+  if(typeof ExcelJS === 'undefined'){ alert('Excel export library did not load (check your internet connection). Try Backup (JSON) instead.'); return; }
+  const cqas = relevantCQAs();
+  const hrParams = highRiskParams();
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Kushal Paudel';
+  wb.lastModifiedBy = 'Kushal Paudel';
+  wb.title = 'QbD Tool — Quality by Design Risk Assessment';
+
+  xlAddFlatSheet(wb, 'QTPP', [
+    {header:'Attribute', key:'name', width:26},{header:'Target / Range', key:'target', width:28},{header:'Justification', key:'justification', width:40}
+  ], state.qtpps.map(q=>({name:q.name, target:q.target, justification:q.justification})));
+
+  xlAddFlatSheet(wb, 'CQA', [
+    {header:'Attribute', key:'name', width:24},{header:'Category', key:'category', width:22},{header:'Linked QTPP', key:'qtpp', width:20},
+    {header:'Impact (Safety)', key:'is', width:12},{header:'Uncertainty (Safety)', key:'us', width:14},
+    {header:'Impact (Efficacy)', key:'ie', width:12},{header:'Uncertainty (Efficacy)', key:'ue', width:14},
+    {header:'Safety Score', key:'ss', width:12},{header:'Efficacy Score', key:'es', width:12},
+    {header:'Classification', key:'cls', width:14},{header:'Rationale', key:'rationale', width:40}
+  ], state.cqas.map(c=>{ const r=computeCQA(c); const qn=(state.qtpps.find(q=>q.id===c.qtppLink)||{}).name||''; return {name:c.name, category:c.category, qtpp:qn, is:c.impactSafety, us:c.uncertaintySafety, ie:c.impactEfficacy, ue:c.uncertaintyEfficacy, ss:r.safetyScore, es:r.efficacyScore, cls:r.classification, rationale:c.rationale}; }), 'cls');
+
+  const pfGroups = groupByUO(state.params).map(g=>({label:`${g.unitOp.order}. ${g.unitOp.name||'(unnamed)'}`, rows: g.params.map(p=>({name:p.name, unit:p.unit, low:p.lowSetpoint, high:p.highSetpoint, notes:p.notes}))}));
+  xlAddGroupedSheet(wb, 'Process Flow', [
+    {header:'Parameter', key:'name', width:26},{header:'Unit', key:'unit', width:12},{header:'Low Setpoint', key:'low', width:14},{header:'High Setpoint', key:'high', width:14},{header:'Notes', key:'notes', width:34}
+  ], pfGroups);
+
+  const linkGroups = groupByUO(state.params).map(g=>({label:`${g.unitOp.order}. ${g.unitOp.name||'(unnamed)'}`, params: g.params}));
+  xlAddMatrixSheet(wb, 'Linkage', cqas, linkGroups);
+
+  const classGroups = groupByUO(state.params).map(g=>({label:`${g.unitOp.order}. ${g.unitOp.name||'(unnamed)'}`, rows: g.params.map(p=>({name:p.name, maxLink:maxLinkageForParam(p.id,cqas), cls:getEffectiveClassification(p,cqas), rationale:p.classificationRationale}))}));
+  xlAddGroupedSheet(wb, 'Classification', [
+    {header:'Parameter', key:'name', width:26},{header:'Max Linkage', key:'maxLink', width:12},{header:'Classification', key:'cls', width:14},{header:'Rationale', key:'rationale', width:40}
+  ], classGroups, 'cls');
+
+  const fmea2aParams = state.params.filter(p=>['CPP','KPP'].includes(getEffectiveClassification(p,cqas)));
+  const fmea2aGroups = groupByUO(fmea2aParams).map(g=>({label:`${g.unitOp.order}. ${g.unitOp.name||'(unnamed)'}`, rows: g.params.map(p=>{ const s=p.severity||1,o=p.occurrence||1,d=p.detection||1; return {name:p.name, cls:getEffectiveClassification(p,cqas), failureMode:p.failureMode, s,o,d, rpn:s*o*d, tier:rpnTier(s*o*d), rationale:p.fmeaRationale}; })}));
+  xlAddGroupedSheet(wb, 'FMEA 2A', [
+    {header:'Parameter', key:'name', width:24},{header:'Class', key:'cls', width:10},{header:'Failure Mode', key:'failureMode', width:30},
+    {header:'S', key:'s', width:6},{header:'O', key:'o', width:6},{header:'D', key:'d', width:6},{header:'RPN', key:'rpn', width:8},{header:'Tier', key:'tier', width:10},{header:'Rationale', key:'rationale', width:34}
+  ], fmea2aGroups, 'tier');
+
+  const pcGroups = groupByUO(hrParams).map(g=>({label:`${g.unitOp.order}. ${g.unitOp.name||'(unnamed)'} — ${suggestStudyMode(g.params.length)}`, rows: g.params.map(p=>({name:p.name, rangeLow:p.pcRangeLow, rangeHigh:p.pcRangeHigh, doeType:p.doeType, materials:p.pcMaterials, notes:p.pcNotes}))}));
+  xlAddGroupedSheet(wb, 'Characterization Plan', [
+    {header:'Parameter', key:'name', width:24},{header:'Study Range Low', key:'rangeLow', width:14},{header:'Study Range High', key:'rangeHigh', width:14},
+    {header:'DOE Design Type', key:'doeType', width:22},{header:'Materials Required', key:'materials', width:34},{header:'Notes', key:'notes', width:26}
+  ], pcGroups);
+
+  const fmea2bGroups = groupByUO(hrParams).map(g=>({label:`${g.unitOp.order}. ${g.unitOp.name||'(unnamed)'}`, rows: g.params.map(p=>{ const s=p.severity2||p.severity||1,o=p.occurrence2||1,d=p.detection2||1; return {name:p.name, parLow:p.parLow, parHigh:p.parHigh, norLow:p.norLow, norHigh:p.norHigh, designSpace:p.designSpace, actionLow:p.actionLow, actionHigh:p.actionHigh, ifLow:p.actionLowResponse, ifHigh:p.actionHighResponse, s,o,d, rpn:s*o*d, tier:rpnTier(s*o*d)}; })}));
+  xlAddGroupedSheet(wb, 'FMEA 2B', [
+    {header:'Parameter', key:'name', width:22},{header:'PAR Low', key:'parLow', width:10},{header:'PAR High', key:'parHigh', width:10},
+    {header:'NOR Low', key:'norLow', width:10},{header:'NOR High', key:'norHigh', width:10},{header:'Design Space', key:'designSpace', width:26},
+    {header:'Action Low', key:'actionLow', width:10},{header:'Action High', key:'actionHigh', width:10},
+    {header:'If Low Limit Reached', key:'ifLow', width:30},{header:'If High Limit Reached', key:'ifHigh', width:30},
+    {header:'S', key:'s', width:5},{header:'O', key:'o', width:5},{header:'D', key:'d', width:5},{header:'RPN', key:'rpn', width:7},{header:'Tier', key:'tier', width:9}
+  ], fmea2bGroups, 'tier');
+
+  xlAddFlatSheet(wb, 'Control Strategy', [
+    {header:'Category', key:'category', width:22},{header:'Control Element', key:'description', width:44},{header:'Rationale', key:'rationale', width:34}
+  ], state.controlStrategy.map(cs=>({category:cs.category, description:cs.description, rationale:cs.rationale})));
+
+  xlAddFlatSheet(wb, 'Supportive Studies', [
+    {header:'Study Type', key:'type', width:26},{header:'CTD Reference', key:'ctdRef', width:14},{header:'Title', key:'title', width:30},
+    {header:'Status', key:'status', width:12},{header:'Risk Assessment', key:'riskAssessment', width:34},{header:'Scope', key:'scope', width:30},
+    {header:'Objective', key:'objective', width:32},{header:'Design Summary', key:'designSummary', width:36},
+    {header:'Acceptance Criteria', key:'acceptanceCriteria', width:30},{header:'Outcome / Result', key:'outcome', width:28}
+  ], state.supportiveStudies.map(s=>({type:s.type, ctdRef:s.ctdRef, title:s.title, status:s.status, riskAssessment:s.riskAssessment, scope:s.scope, objective:s.objective, designSummary:s.designSummary, acceptanceCriteria:s.acceptanceCriteria, outcome:s.outcome})));
+
+  const ppqGroups = groupByUO(hrParams).map(g=>({label:`${g.unitOp.order}. ${g.unitOp.name||'(unnamed)'}`, rows: g.params.map(p=>({name:p.name, norLow:p.norLow, norHigh:p.norHigh, low:p.ppqLowSetpoint, target:p.ppqTargetSetpoint, high:p.ppqHighSetpoint, criterion:p.ppqAcceptanceCriterion}))}));
+  xlAddGroupedSheet(wb, 'PPQ Parameters', [
+    {header:'Parameter', key:'name', width:24},{header:'NOR Low', key:'norLow', width:10},{header:'NOR High', key:'norHigh', width:10},
+    {header:'Low Setpoint', key:'low', width:14},{header:'Target Setpoint', key:'target', width:14},{header:'High Setpoint', key:'high', width:14},
+    {header:'Acceptance Criterion', key:'criterion', width:36}
+  ], ppqGroups);
+
+  xlAddFlatSheet(wb, 'PPQ CQAs', [
+    {header:'CQA', key:'name', width:24},{header:'Class', key:'cls', width:12},{header:'Acceptance Criterion', key:'criterion', width:34},
+    {header:'Analytical Method', key:'method', width:22},{header:'Justification', key:'justification', width:34}
+  ], cqas.map(c=>({name:c.name, cls:c.classification, criterion:c.acceptanceCriterion, method:c.analyticalMethod, justification:c.ppqJustification})), 'cls');
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='QbD_RiskAssessment.xlsx'; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// ---------- JSON backup / restore ----------
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='qbd-data-backup.json'; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function importJSONFile(input){
+  const file = input.files && input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    try{
+      const parsed = JSON.parse(e.target.result);
+      state = { qtpps:[], cqas:[], unitOps:[], params:[], linkages:{}, controlStrategy:[], supportiveStudies:[], ppqBatches:[], ppqResults:{}, ...parsed };
+      await save();
+      renderEverything();
+    }catch(err){ alert('Could not read that file — is it a valid QbD backup JSON?'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// tabs
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tabpane').forEach(p=>p.style.display='none');
+    document.getElementById('tab-'+btn.dataset.tab).style.display='block';
+    const tab = btn.dataset.tab;
+    if(tab==='qtpp') renderQTPP();
+    if(tab==='cqa') renderCQA();
+    if(tab==='process') renderProcess();
+    if(tab==='linkage') renderLinkage();
+    if(tab==='classify') renderClassification();
+    if(tab==='fmea2a') renderFmea2a();
+    if(tab==='pcplan') renderPCPlan();
+    if(tab==='fmea2b') renderFmea2b();
+    if(tab==='supportive') renderSupportiveStudies();
+    if(tab==='ppq') renderPPQ();
+    if(tab==='module3') renderModule3Draft();
+    if(tab==='summary') renderSummary();
+  });
+});
+
+load();
+</script>
+</body>
+</html>
