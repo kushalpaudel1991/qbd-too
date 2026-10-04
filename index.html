@@ -9,36 +9,57 @@
     --ink:#1B2A45; --ink-soft:#4A5670; --paper:#F4F5F2; --panel:#FFFFFF; --line:#DADFE3;
     --amber:#B8860B; --amber-soft:#F5E9D0; --green:#2F6E4C; --green-soft:#E3F0E7;
     --red:#A8362B; --red-soft:#F6E2DF; --mono:"SF Mono", ui-monospace, Menlo, monospace;
+    --head-bg:#1B2A45; --head-text:#FFFFFF; --head-sub:#B9C2D6; --head-btn:#25375A; --head-btn-line:#34486E;
+    --nav-bg:#101B30; --accent:#B8860B; --btn-bg:#1B2A45; --btn-hover:#0F1C33; --btn-text:#FFFFFF;
+    --field:#FFFFFF; --subtle:#F7F7F5; --subtle-2:#F0F1EE; --subtle-3:#EEF0EC; --subtle-4:#FAFAF8;
+  }
+  /* Theme: Teal (clean, clinical) */
+  :root[data-theme="teal"]{
+    --ink:#123B3F; --ink-soft:#4F6B6E; --paper:#F2F7F7; --line:#D3E2E3;
+    --head-bg:#0E5E63; --head-sub:#BFE0E1; --head-btn:#137278; --head-btn-line:#1E868C;
+    --nav-bg:#0A474B; --accent:#F2B84B; --btn-bg:#0E5E63; --btn-hover:#0A474B;
+    --subtle:#F4F9F9; --subtle-2:#E8F2F2; --subtle-3:#E3EFEF; --subtle-4:#F7FBFB;
+  }
+  /* Theme: Dark */
+  :root[data-theme="dark"]{
+    --ink:#E6EAF2; --ink-soft:#9AA5B8; --paper:#0F141C; --panel:#171E29; --line:#2A3443;
+    --amber:#E0B04A; --amber-soft:#3A2F17; --green:#6BC48F; --green-soft:#1A3326;
+    --red:#EF8A7E; --red-soft:#3D1F1C;
+    --head-bg:#0A0E14; --head-sub:#8F9BB0; --head-btn:#1D2533; --head-btn-line:#2E394B;
+    --nav-bg:#121821; --accent:#E0B04A; --btn-bg:#3B5BDB; --btn-hover:#2F4BC0;
+    --field:#0F141C; --subtle:#1B2330; --subtle-2:#1E2734; --subtle-3:#212B39; --subtle-4:#1A212D;
+    color-scheme:dark;
   }
   *{box-sizing:border-box;}
   body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:14px; line-height:1.5; }
-  header{ background:var(--ink); color:#fff; padding:14px 28px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+  header{ background:var(--head-bg); color:var(--head-text); padding:14px 28px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
   header h1{ font-size:16px; font-weight:600; margin:0; }
-  header .sub{ color:#B9C2D6; font-size:11.5px; max-width:640px; }
+  header .sub{ color:var(--head-sub); font-size:11.5px; max-width:640px; }
   .header-actions{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  .header-actions button, .header-actions label{ background:#25375A; color:#fff; border:1px solid #34486E; padding:6px 10px; border-radius:4px; font-size:12px; cursor:pointer; font-family:inherit; }
+  .header-actions button, .header-actions label{ background:var(--head-btn); color:var(--head-text); border:1px solid var(--head-btn-line); padding:6px 10px; border-radius:4px; font-size:12px; cursor:pointer; font-family:inherit; }
   .header-actions input[type=file]{ display:none; }
-  nav{ display:flex; gap:2px; background:#101B30; padding:0 24px; overflow-x:auto; }
-  nav button{ background:none; border:none; color:#B9C2D6; padding:12px 15px; font-size:12.5px; cursor:pointer; border-bottom:2px solid transparent; font-family:inherit; white-space:nowrap; }
-  nav button.active{ color:#fff; border-bottom:2px solid var(--amber); }
+  .header-actions select{ width:auto; background:var(--head-btn); color:var(--head-text); border:1px solid var(--head-btn-line); padding:6px 8px; font-size:12px; }
+  nav{ display:flex; gap:2px; background:var(--nav-bg); padding:0 24px; overflow-x:auto; }
+  nav button{ background:none; border:none; color:var(--head-sub); padding:12px 15px; font-size:12.5px; cursor:pointer; border-bottom:2px solid transparent; font-family:inherit; white-space:nowrap; }
+  nav button.active{ color:var(--head-text); border-bottom:2px solid var(--accent); }
   main{ padding:24px 28px 80px; max-width:1280px; margin:0 auto; }
   .panel{ background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px; margin-bottom:20px; }
   .panel h2{ font-size:15px; margin:0 0 4px; }
   .panel .desc{ color:var(--ink-soft); font-size:12.5px; margin-bottom:12px; }
-  .filter-bar{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px; padding:10px 12px; background:#F7F7F5; border:1px solid var(--line); border-radius:4px; }
+  .filter-bar{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px; padding:10px 12px; background:var(--subtle); border:1px solid var(--line); border-radius:4px; }
   .filter-bar label{ font-size:12px; color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
   .filter-bar select{ width:auto; min-width:160px; }
   table{ width:100%; border-collapse:collapse; font-size:13px; }
   th{ text-align:left; color:var(--ink-soft); font-weight:600; font-size:11px; padding:6px 8px; border-bottom:1px solid var(--line); }
   td{ padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
   tr:last-child td{ border-bottom:none; }
-  input[type=text], textarea, select{ width:100%; border:1px solid var(--line); border-radius:4px; padding:6px 8px; font-family:inherit; font-size:13px; background:#fff; color:var(--ink); }
+  input[type=text], textarea, select{ width:100%; border:1px solid var(--line); border-radius:4px; padding:6px 8px; font-family:inherit; font-size:13px; background:var(--field); color:var(--ink); }
   textarea{ resize:vertical; min-height:34px; }
   .row-actions{ white-space:nowrap; }
   button.icon{ background:none; border:none; cursor:pointer; color:var(--ink-soft); font-size:13px; padding:2px 6px; }
   button.icon:hover{ color:var(--red); }
-  .add-btn{ background:var(--ink); color:#fff; border:none; padding:8px 14px; border-radius:4px; font-size:13px; cursor:pointer; margin-top:12px; font-family:inherit; }
-  .add-btn:hover{ background:#0F1C33; }
+  .add-btn{ background:var(--btn-bg); color:var(--btn-text); border:none; padding:8px 14px; border-radius:4px; font-size:13px; cursor:pointer; margin-top:12px; font-family:inherit; }
+  .add-btn:hover{ background:var(--btn-hover); }
   .tag{ display:inline-block; padding:2px 8px; border-radius:3px; font-size:11.5px; font-weight:600; }
   .tag.CQA, .tag.CPP, .tag.High{ background:var(--red-soft); color:var(--red); }
   .tag.pCQA, .tag.KPP, .tag.Medium{ background:var(--amber-soft); color:var(--amber); }
@@ -52,9 +73,9 @@
   .stat.pCQA .n, .stat.KPP .n, .stat.Medium .n{ color:var(--amber); }
   .stat.Non-CQA .n, .stat.Non-CPP .n, .stat.Low .n{ color:var(--green); }
   .empty{ color:var(--ink-soft); font-size:13px; padding:16px 0; text-align:center; }
-  .print-btn{ background:#fff; border:1px solid var(--line); color:var(--ink); padding:8px 14px; border-radius:4px; font-size:13px; cursor:pointer; font-family:inherit; margin-left:8px; }
+  .print-btn{ background:var(--panel); border:1px solid var(--line); color:var(--ink); padding:8px 14px; border-radius:4px; font-size:13px; cursor:pointer; font-family:inherit; margin-left:8px; }
   .unitop{ border:1px solid var(--line); border-radius:6px; margin-bottom:14px; overflow:hidden; }
-  .unitop-head{ background:#F0F1EE; padding:10px 14px; display:flex; align-items:center; gap:10px; }
+  .unitop-head{ background:var(--subtle-2); padding:10px 14px; display:flex; align-items:center; gap:10px; }
   .unitop-head .order{ font-family:var(--mono); color:var(--ink-soft); font-size:12px; width:20px; }
   .unitop-head select{ flex:1; font-weight:600; }
   .unitop-actions{ display:flex; gap:2px; }
@@ -65,22 +86,22 @@
   .param-row-bottom{ display:grid; grid-template-columns:1fr 1fr 1.6fr; gap:8px; }
   table.matrix{ border-collapse:collapse; font-size:12.5px; }
   table.matrix th, table.matrix td{ border:1px solid var(--line); padding:5px; text-align:center; }
-  table.matrix th.rowhead{ text-align:left; font-weight:500; color:var(--ink); background:#F7F7F5; white-space:nowrap; }
+  table.matrix th.rowhead{ text-align:left; font-weight:500; color:var(--ink); background:var(--subtle); white-space:nowrap; }
   table.matrix th.colhead{ writing-mode:vertical-rl; transform:rotate(180deg); height:110px; font-weight:600; }
   table.matrix select{ width:44px; padding:2px; text-align:center; border:none; font-family:var(--mono); font-weight:600; }
-  .l0{ background:#fff; } .l1,.l2{ background:var(--green-soft); color:var(--green); }
+  .l0{ background:var(--field); } .l1,.l2{ background:var(--green-soft); color:var(--green); }
   .l3{ background:var(--amber-soft); color:var(--amber); } .l4,.l5{ background:var(--red-soft); color:var(--red); }
   .matrix-wrap, .table-scroll{ overflow-x:auto; }
   .unit-suffix{ color:var(--ink-soft); font-size:12px; margin-left:4px; }
   .num-pair{ display:flex; align-items:center; gap:4px; }
   .num-pair input{ width:92px; flex:none; }
-  tr.uo-group-row td{ background:#EEF0EC; font-weight:600; padding:8px; border-top:2px solid var(--line); font-size:12.5px; }
+  tr.uo-group-row td{ background:var(--subtle-3); font-weight:600; padding:8px; border-top:2px solid var(--line); font-size:12.5px; }
   table.matrix tr.uo-group-row td{ text-align:left; }
-  details.rating-help{ margin-bottom:14px; border:1px solid var(--line); border-radius:4px; padding:8px 12px; background:#FAFAF8; }
+  details.rating-help{ margin-bottom:14px; border:1px solid var(--line); border-radius:4px; padding:8px 12px; background:var(--subtle-4); }
   details.rating-help summary{ cursor:pointer; font-size:12.5px; color:var(--ink-soft); font-weight:600; }
   details.rating-help table{ margin-top:10px; }
   details.rating-help .desc{ margin:8px 0 0; }
-  #module3DraftContent{ border:1px solid var(--line); border-radius:4px; padding:24px; background:#fff; font-size:13px; line-height:1.65; }
+  #module3DraftContent{ border:1px solid var(--line); border-radius:4px; padding:24px; background:var(--panel); font-size:13px; line-height:1.65; }
   #module3DraftContent h3{ font-size:14px; margin:20px 0 8px; color:var(--ink); border-bottom:1px solid var(--line); padding-bottom:4px; }
   #module3DraftContent h3:first-child{ margin-top:0; }
   #module3DraftContent p{ margin:8px 0; }
@@ -90,25 +111,44 @@
   #module3DraftContent .m3-header{ text-align:center; border-bottom:2px solid var(--ink); padding-bottom:14px; margin-bottom:20px; }
   #module3DraftContent .m3-header h2{ margin:0; font-size:16px; color:var(--ink); }
   #module3DraftContent .m3-header .meta{ color:var(--ink-soft); font-size:11.5px; margin-top:6px; }
-  @media print{ nav, .add-btn, .row-actions, .print-btn, .filter-bar, .header-actions{ display:none !important; } body{ background:#fff; } }
+  @media print{
+    :root[data-theme]{ --ink:#1B2A45; --ink-soft:#4A5670; --paper:#FFFFFF; --panel:#FFFFFF; --line:#DADFE3;
+      --amber:#B8860B; --amber-soft:#F5E9D0; --green:#2F6E4C; --green-soft:#E3F0E7; --red:#A8362B; --red-soft:#F6E2DF;
+      --field:#FFFFFF; --subtle:#F7F7F5; --subtle-2:#F0F1EE; --subtle-3:#EEF0EC; --subtle-4:#FAFAF8; color-scheme:light; }
+    nav, .add-btn, .row-actions, .print-btn, .filter-bar, .header-actions{ display:none !important; } body{ background:#fff; } }
 </style>
+<script>
+  function setTheme(t){
+    if(t==='classic') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', t);
+    try{ localStorage.setItem('qbdTheme', t); }catch(e){}
+    var sel=document.getElementById('themeSelect'); if(sel) sel.value=t;
+  }
+  (function(){ var t='classic'; try{ t=localStorage.getItem('qbdTheme')||'classic'; }catch(e){}
+    setTheme(t); document.addEventListener('DOMContentLoaded', function(){ setTheme(t); }); })();
+</script>
 </head>
 <body>
 
 <header>
   <div style="display:flex; align-items:center; gap:12px;">
     <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-      <rect x="1" y="1" width="38" height="38" rx="8" fill="#1B2A45" stroke="#B8860B" stroke-width="2"/>
+      <rect x="1" y="1" width="38" height="38" rx="8" fill="var(--head-bg)" stroke="var(--accent)" stroke-width="2"/>
       <text x="20" y="26" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">KP</text>
     </svg>
     <div>
       <h1>QbD Tool</h1>
       <div class="sub">QTPP → CQA → Process Flow → Linkage → Classification → FMEA 2A → Characterization Plan → FMEA 2B / Control Strategy → PPQ Acceptance Criteria</div>
-      <div class="sub" style="margin-top:2px; color:#B8860B; font-weight:600;">by Kushal Paudel</div>
+      <div class="sub" style="margin-top:2px; color:var(--accent); font-weight:600;">by Kushal Paudel</div>
     </div>
   </div>
   <div class="header-actions">
     <span class="sub" id="saveStatus">Loading…</span>
+    <select id="themeSelect" title="Theme" onchange="setTheme(this.value)">
+      <option value="classic">Theme: Navy</option>
+      <option value="teal">Theme: Teal</option>
+      <option value="dark">Theme: Dark</option>
+    </select>
     <button onclick="exportExcel()">Export to Excel</button>
     <button onclick="exportJSON()">Backup (JSON)</button>
     <label>Restore (JSON)<input type="file" accept="application/json" onchange="importJSONFile(this)"></label>
@@ -437,7 +477,7 @@
       </div>
       <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; align-items:center;">
         <button class="add-btn" style="margin-top:0;" onclick="renderModule3Draft()">Refresh Draft</button>
-        <button class="add-btn" style="margin-top:0; background:#B8860B;" id="polishBtn" onclick="polishWithAI()">Polish with AI (Expert CMC Voice)</button>
+        <button class="add-btn" style="margin-top:0; background:var(--accent);" id="polishBtn" onclick="polishWithAI()">Polish with AI (Expert CMC Voice)</button>
         <button class="print-btn" id="copyDraftBtn" onclick="copyModule3Draft()">Copy to Clipboard</button>
         <button class="print-btn" onclick="downloadModule3Word()">Download as Word (.doc)</button>
         <button class="print-btn" onclick="window.print()">Print / Export PDF</button>
@@ -952,7 +992,7 @@ function renderPCPlan(){
   document.getElementById('pcplanEmpty').style.display = groups.length ? 'none' : 'block';
   container.innerHTML = groups.map(g=>`
     <div class="unitop">
-      <div class="unitop-head" style="background:#EEF0EC;">
+      <div class="unitop-head" style="background:var(--subtle-3);">
         <span class="order">${g.unitOp.order}.</span>
         <div style="flex:1;font-weight:600;">${esc(g.unitOp.name)||'(unnamed)'} — <span style="font-weight:400;color:var(--ink-soft);">${suggestStudyMode(g.params.length)}</span></div>
       </div>
@@ -1091,7 +1131,7 @@ function renderPPQ(){
   document.getElementById('ppqParamEmpty').style.display = groups.length ? 'none' : 'block';
   container.innerHTML = groups.map(g=>`
     <div class="unitop">
-      <div class="unitop-head" style="background:#EEF0EC;"><span class="order">${g.unitOp.order}.</span><div style="flex:1;font-weight:600;">${esc(g.unitOp.name)||'(unnamed)'}</div></div>
+      <div class="unitop-head" style="background:var(--subtle-3);"><span class="order">${g.unitOp.order}.</span><div style="flex:1;font-weight:600;">${esc(g.unitOp.name)||'(unnamed)'}</div></div>
       <div class="unitop-body"><div class="table-scroll"><table>
         <thead><tr><th style="width:15%">Parameter</th><th style="width:14%">NOR</th><th style="width:13%">Low Setpoint</th><th style="width:13%">Target Setpoint</th><th style="width:13%">High Setpoint</th><th>Acceptance Criterion</th></tr></thead>
         <tbody>
